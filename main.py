@@ -29,14 +29,27 @@ def index():
     result = ""
 
     if request.method == "POST":
-        file = request.files.get("file")
+        action = request.form.get("action")
 
-        if not file or file.filename == "":
-            result = "❌ Please upload a PDF file"
-        elif not file.filename.lower().endswith(".pdf"):
-            result = "❌ Only PDF files are allowed"
-        else:
-            result = check_pdf_spam(file)
+        # ----- PDF CHECK -----
+        if action == "analyze_file":
+            file = request.files.get("file")
+
+            if not file or file.filename == "":
+                result = "❌ Please upload a PDF file"
+            elif not file.filename.lower().endswith(".pdf"):
+                result = "❌ Only PDF files are allowed"
+            else:
+                result = check_pdf_spam(file)
+
+        # ----- URL CHECK -----
+        elif action == "classify_url":
+            url = request.form.get("url")
+
+            if not url:
+                result = "❌ Please enter a URL"
+            else:
+                result = check_url_threat(url)
 
     return render_template("index.html", result=result)
 
@@ -61,6 +74,39 @@ def check_pdf_spam(file):
 
     except:
         return "❌ Cannot read PDF"
+
+# ---------- URL CHECK ----------
+def check_url_threat(url):
+    url = url.lower()
+
+    suspicious_keywords = [
+        "login", "verify", "update", "secure", "account",
+        "bank", "free", "offer", "bonus", "click"
+    ]
+
+    suspicious_domains = [
+        "bit.ly", "tinyurl", "goo.gl", "t.co"
+    ]
+
+    score = 0
+
+    for word in suspicious_keywords:
+        if word in url:
+            score += 1
+
+    for domain in suspicious_domains:
+        if domain in url:
+            score += 2
+
+    if re.search(r"https?://\d+\.\d+\.\d+\.\d+", url):
+        score += 3
+
+    if score >= 4:
+        return "❌ MALICIOUS URL (High Risk)"
+    elif score >= 2:
+        return "⚠️ SUSPICIOUS URL"
+    else:
+        return "✅ SAFE URL"
 
 # ---------- RUN ----------
 if __name__ == "__main__":

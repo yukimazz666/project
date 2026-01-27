@@ -1,67 +1,107 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8"  name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ThreatGuard</title>
+
     <style>
         body {
-             background: url("{{ url_for('static', filename='img/network.jpeg') }}");
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
+            background: url("{{ url_for('static', filename='img/network.jpeg') }}") no-repeat center center fixed;
+            background-size: cover;
+            font-family: Arial, sans-serif;
+            color: white;
+            margin: 0;
+            padding: 0;
         }
+
         .container {
-            width: 400px;
-            margin: 80px auto;
-            background: #111827;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 0 20px rgba(0,0,0,0.6);
+            max-width: 420px;
+            margin: 60px auto;
+            background: rgba(17, 24, 39, 0.95);
+            padding: 25px;
+            border-radius: 14px;
+            box-shadow: 0 0 25px rgba(0,0,0,0.7);
         }
+
         h1 {
             text-align: center;
             color: #38bdf8;
+            margin-bottom: 20px;
         }
+
+        h3 {
+            margin-top: 10px;
+            color: #a5f3fc;
+        }
+
         input, button {
             width: 100%;
-            padding: 10px;
+            padding: 12px;
             margin-top: 10px;
-            border-radius: 6px;
+            border-radius: 8px;
             border: none;
+            font-size: 14px;
         }
+
+        input {
+            background: #020617;
+            color: white;
+        }
+
         button {
             background: #22c55e;
             color: black;
             font-weight: bold;
             cursor: pointer;
+            transition: 0.2s;
         }
+
+        button:hover {
+            background: #16a34a;
+        }
+
+        hr {
+            margin: 25px 0;
+            border: 1px solid #1e293b;
+        }
+
         .result {
             margin-top: 20px;
-            padding: 10px;
+            padding: 12px;
             background: #020617;
-            border-left: 4px solid #22c55e;
+            border-left: 5px solid #22c55e;
+            border-radius: 6px;
+            font-weight: bold;
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                margin: 30px 15px;
+            }
         }
     </style>
 </head>
+
 <body>
 
 <div class="container">
     <h1>ThreatGuard</h1>
 
-    <!-- File Detection -->
+    <!-- FILE DETECTION -->
     <form method="POST" enctype="multipart/form-data">
-        <h3>Malicious File Detection</h3>
-        <input type="file" name="file" required accept=".pdf, .txt">
-        <button type="submit" name="analyze_file">Analyze</button>
+        <h3>📄 Malicious File Detection</h3>
+        <input type="file" name="file" accept=".pdf" required>
+        <button type="submit" name="analyze_file">Analyze File</button>
     </form>
 
     <hr>
 
-    <!-- URL Detection -->
+    <!-- URL DETECTION -->
     <form method="POST">
-        <h3>URL Threat Detection</h3>
-        <input type="text" name="url" placeholder="Enter URL" required>
-        <button type="submit" name="classify_url">Classify</button>
+        <h3>🌐 URL Threat Detection</h3>
+        <input type="text" name="url" placeholder="https://example.com" required>
+        <button type="submit" name="classify_url">Classify URL</button>
     </form>
 
     {% if result %}

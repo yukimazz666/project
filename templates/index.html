@@ -92,7 +92,7 @@
     <form method="POST" enctype="multipart/form-data">
         <h3>📄 Malicious File Detection</h3>
         <input type="file" name="file" accept=".pdf" required>
-        <button type="submit" name="analyze_file">Analyze File</button>
+        <button type="submit" name="action" value="analyze_file">Analyze File</button>
     </form>
 
     <hr>
@@ -101,7 +101,7 @@
     <form method="POST">
         <h3>🌐 URL Threat Detection</h3>
         <input type="text" name="url" placeholder="https://example.com" required>
-        <button type="submit" name="classify_url">Classify URL</button>
+        <button type="submit" name="action" value="classify_url">Classify URL</button>
     </form>
 
     {% if result %}

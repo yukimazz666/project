@@ -33,6 +33,14 @@ create_table()
 def home():
     return render_template("home.html")
 
+
+@app.route("/start")
+def start():
+    if "user" in session:
+        return redirect(url_for("check"))   # already logged in
+    else:
+        return redirect(url_for("login"))   # not logged in
+
 # ---------- REGISTER ----------
 @app.route("/register", methods=["GET", "POST"])
 def register():
@@ -56,11 +64,7 @@ def register():
         except sqlite3.IntegrityError:
             flash("⚠ Username or Email already exists!", "danger")
 
-
-
-
     return render_template("register.html")
-
 
 # ---------- LOGIN ----------
 @app.route("/login", methods=["GET", "POST"])
@@ -81,15 +85,31 @@ def login():
 
         if user and check_password_hash(user[0], password):
             session["user"] = username 
-            return redirect(url_for("index"))
+            return redirect(url_for("check"))
         else:
             flash("❌ Invalid username or password", "danger")
 
     return render_template("login.html")
 
-# ---------- MAIN APP ----------
-@app.route("/index", methods=["GET", "POST"])
+
+@app.route("/index")
 def index():
+    if "user" not in session:
+        return redirect(url_for("login"))
+    return render_template("index.html")
+
+
+
+@app.route("/logout", methods=["GET"])
+def logout():
+    session.pop("user", None)
+    return redirect(url_for("login"))
+
+
+
+# ---------- check ----------
+@app.route("/check", methods=["GET", "POST"])
+def check():
     result = ""
 
     if request.method == "POST":
@@ -120,7 +140,7 @@ def index():
 
 
 
-    return render_template("index.html", result=result)
+    return render_template("check.html", result=result)
 
 # ---------- PDF CHECK ----------
 def check_pdf_spam(file):

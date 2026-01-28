@@ -1,13 +1,66 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, flash, session
 from PyPDF2 import PdfReader
 import re
+import sqlite3
+from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
+
+app.secret_key = "secret123"
+
+# ---------- DATABASE ----------
+def get_db():
+    return sqlite3.connect("users.db")
+
+def create_table():
+    db = get_db()
+    cursor = db.cursor()
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT UNIQUE,
+            email TEXT,
+            password TEXT
+        )
+    """)
+    db.commit()
+    db.close()
+
+create_table()
 
 # ---------- HOME ----------
 @app.route("/")
 def home():
     return render_template("home.html")
+
+# ---------- REGISTER ----------
+@app.route("/register", methods=["GET", "POST"])
+def register():
+    if request.method == "POST":
+        username = request.form["username"]
+        email = request.form["email"]
+        password = generate_password_hash(request.form["password"])
+
+        try:
+            db = get_db()
+            cursor = db.cursor()
+            cursor.execute(
+                "INSERT INTO users (username, email, password) VALUES (?, ?, ?)",
+                (username, email, password)
+            )
+            db.commit()
+            db.close()
+            flash("Registration successful!", "success")
+            return redirect(url_for("login"))
+
+        except sqlite3.IntegrityError:
+            flash("⚠ Username or Email already exists!", "danger")
+
+
+
+
+    return render_template("register.html")
+
 
 # ---------- LOGIN ----------
 @app.route("/login", methods=["GET", "POST"])
@@ -16,10 +69,21 @@ def login():
         username = request.form.get("username")
         password = request.form.get("password")
 
-        if username == "admin" and password == "1234":
+        db = get_db()
+        cursor = db.cursor()
+
+        cursor.execute(
+            "SELECT password FROM users WHERE username = ?",
+            (username,)
+        )
+        user = cursor.fetchone()
+        db.close()
+
+        if user and check_password_hash(user[0], password):
+            session["user"] = username 
             return redirect(url_for("index"))
         else:
-            return "❌ Invalid credentials"
+            flash("❌ Invalid username or password", "danger")
 
     return render_template("login.html")
 
@@ -50,6 +114,11 @@ def index():
                 result = "❌ Please enter a URL"
             else:
                 result = check_url_threat(url)
+
+        if "user" not in session:
+            return redirect(url_for("login"))
+
+
 
     return render_template("index.html", result=result)
 

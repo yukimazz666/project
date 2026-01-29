@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            margin: 0;
+            height: 100vh;
+            background-image: url("{{ url_for('static', filename='bg.jpg') }}");
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .google-btn {
+    display: block;
+    text-align: center;
+    padding: 14px;
+    background: #4285F4;
+    color: white;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+
+        .login-box {
+            width: 100%;
+            max-width: 350px;
+            background: rgba(0, 0, 0, 0.75);
+            padding: 25px;
+            border-radius: 10px;
+            color: #fff;
+        }
+
+        .login-box h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #38bdf8;
+        }
+
+        .login-box input {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            background: #020617;
+            color: white;
+        }
+
+        .login-box button {
+            width: 100%;
+            padding: 12px;
+            background: #22c55e;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: bold;
+            color: #020617;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .register-text a {
+            color: #00bfff;
+}
+
+
+        .login-box button:hover {
+            background: #16a34a;
+        }
+
+        .login-box p {
+            text-align: center;
+            margin-top: 12px;
+            font-size: 13px;
+            color: #ee6617;
+        }
+
+        @media (max-width: 480px) {
+            .login-box {
+                margin: 15px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="login-box">
+    <h2>Login</h2>
+
+    <form method="POST">
+        <a href="{{ url_for('login_google') }}" class="google-btn">
+    Login with Google
+</a>
+
+        <input type="text" name="username" placeholder="Username" required>
+        <input type="password" name="password" placeholder="Password" required>
+        <button type="submit">Login</button>
+    </form>
+    <p class="register-text"><a href="{{ url_for('register')}}">Register</a></p>
+    <p>© 2026 ThreatGuard</p>
+</div>
+
+</body>
+</html>

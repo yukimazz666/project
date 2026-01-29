@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mini Browser</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            margin: 0;
+            background: #f2f3f5;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        /* Top Logo */
+        .logo {
+            margin: 30px 0 15px;
+            font-size: 28px;
+            font-weight: bold;
+            color: #ff1b2d;
+        }
+
+        /* Search Bar */
+        .search-box {
+            width: 90%;
+            max-width: 400px;
+            background: #fff;
+            border-radius: 25px;
+            padding: 10px 15px;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        }
+
+        .search-box input {
+            border: none;
+            outline: none;
+            width: 100%;
+            font-size: 16px;
+        }
+
+        /* Speed Dial */
+        .speed-dial {
+            margin-top: 25px;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            width: 90%;
+            max-width: 420px;
+        }
+
+        .card {
+            background: #fff;
+            border-radius: 15px;
+            padding: 15px 5px;
+            text-align: center;
+            font-size: 14px;
+            color: #333;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.08);
+            cursor: pointer;
+        }
+
+        .card img {
+            width: 40px;
+            height: 40px;
+            margin-bottom: 8px;
+        }
+
+        /* Bottom Navigation */
+        .bottom-nav {
+            margin-top: auto;
+            width: 100%;
+            background: #fff;
+            display: flex;
+            justify-content: space-around;
+            padding: 12px 0;
+            box-shadow: 0 -2px 6px rgba(0,0,0,0.1);
+        }
+
+        .nav-item {
+            font-size: 14px;
+            color: #555;
+        }
+
+        @media (max-width: 480px) {
+            .speed-dial {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Logo -->
+    <div class="logo">Mini</div>
+
+    <!-- Search -->
+    <div class="search-box">
+        <input type="text" placeholder="Search or enter address">
+    </div>
+
+    <!-- Speed Dial -->
+    <div class="speed-dial">
+        <div class="card">
+            <img src="https://www.google.com/favicon.ico">
+            Google
+        </div>
+        <div class="card">
+            <img src="https://www.youtube.com/favicon.ico">
+            YouTube
+        </div>
+        <div class="card">
+            <img src="https://www.facebook.com/favicon.ico">
+            Facebook
+        </div>
+        <div class="card">
+            <img src="https://www.wikipedia.org/favicon.ico">
+            Wiki
+        </div>
+        <div class="card">
+            <img src="https://www.amazon.com/favicon.ico">
+            Amazon
+        </div>
+        <div class="card">
+            <img src="https://www.instagram.com/favicon.ico">
+            Instagram
+        </div>
+        <div class="card">
+            <img src="https://www.twitter.com/favicon.ico">
+            Twitter
+        </div>
+        <div class="card">
+            <img src="https://www.opera.com/favicon.ico">
+            Opera
+        </div>
+    </div>
+
+    <!-- Bottom Navigation -->
+    <div class="bottom-nav">
+        <div class="nav-item">Home</div>
+        <div class="nav-item">Search</div>
+        <div class="nav-item">Tabs</div>
+        <div class="nav-item">Menu</div>
+    </div>
+
+</body>
+</html>

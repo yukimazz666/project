@@ -74,6 +74,8 @@ google = oauth.register(
     client_id="427687274087-ovm7bl9vn75tvh94v4jbec6h7d2m4n3k.apps.googleusercontent.com",
     client_secret="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",
     server_metadata_url="https://accounts.google.com/.well-known/openid-configuration",
+    authorize_url="https://accounts.google.com/o/oauth2/v2/auth",
+    access_token_url="https://oauth2.googleapis.com/token",
     client_kwargs={
         "scope": "openid email profile"
     }
@@ -82,7 +84,8 @@ google = oauth.register(
 
 @app.route("/login/google")
 def login_google():
-    redirect_uri = url_for('google_authorized', _external=True)
+    redirect_uri = "http://localhost:5000/login/google/authorized"
+
     return google.authorize_redirect(redirect_uri)
 
 @app.route("/login/google/authorized")
@@ -207,6 +210,8 @@ def check_pdf_spam(file):
 
     except:
         return "❌ Cannot read PDF"
+    
+
 
 # ---------- URL CHECK ----------
 def check_url_threat(url):

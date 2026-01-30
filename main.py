@@ -232,40 +232,35 @@ def check_pdf_spam(file):
     except:
         return "❌ Cannot read PDF"
     
-
+SAFE_BROWSING_API_KEY = os.environ.get("SAFE_BROWSING_API_KEY")
 
 # ---------- URL CHECK ----------
-def check_url_threat(url):
-    url = url.lower()
+def check_url_malicious(url):
+    endpoint = f"https://safebrowsing.googleapis.com/v4/threatMatches:find?key={SAFE_BROWSING_API_KEY}"
 
-    suspicious_keywords = [
-        "login", "verify", "update", "secure", "account",
-        "bank", "free", "offer", "bonus", "click"
-    ]
+    payload = {
+        "client": {
+            "clientId": "threatguard",
+            "clientVersion": "1.0"
+        },
+        "threatInfo": {
+            "threatTypes": [
+                "MALWARE",
+                "SOCIAL_ENGINEERING",
+                "UNWANTED_SOFTWARE",
+                "POTENTIALLY_HARMFUL_APPLICATION"
+            ],
+            "platformTypes": ["ANY_PLATFORM"],
+            "threatEntryTypes": ["URL"],
+            "threatEntries": [{"url": url}]
+        }
+    }
 
-    suspicious_domains = [
-        "bit.ly", "tinyurl", "goo.gl", "t.co"
-    ]
+    response = requests.post(endpoint, json=payload)
+    data = response.json()
 
-    score = 0
+    return "❌ Malicious URL detected" if "matches" in data else "✅ URL is safe"
 
-    for word in suspicious_keywords:
-        if word in url:
-            score += 1
-
-    for domain in suspicious_domains:
-        if domain in url:
-            score += 2
-
-    if re.search(r"https?://\d+\.\d+\.\d+\.\d+", url):
-        score += 3
-
-    if score >= 4:
-        return "❌ MALICIOUS URL (High Risk)"
-    elif score >= 2:
-        return "⚠️ SUSPICIOUS URL"
-    else:
-        return "✅ SAFE URL"
 
 # ---------- RUN ----------
 if __name__ == "__main__":

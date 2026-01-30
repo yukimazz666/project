@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 from PyPDF2 import PdfReader
+import requests
 import re
 import sqlite3
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -237,6 +238,9 @@ SAFE_BROWSING_API_KEY = os.environ.get("SAFE_BROWSING_API_KEY")
 # ---------- URL CHECK ----------
 def check_url_malicious(url):
     endpoint = f"https://safebrowsing.googleapis.com/v4/threatMatches:find?key={SAFE_BROWSING_API_KEY}"
+   
+    if not SAFE_BROWSING_API_KEY:
+        return "⚠ URL scanning not configured"
 
     payload = {
         "client": {

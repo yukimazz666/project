@@ -4,10 +4,28 @@ import re
 import sqlite3
 from werkzeug.security import generate_password_hash, check_password_hash
 from authlib.integrations.flask_client import OAuth
+import os
+
+
 
 app = Flask(__name__)
 
-app.secret_key = "secret123"
+if os.environ.get("RENDER"):
+    app.config.update(
+        SESSION_COOKIE_SAMESITE="Lax",
+        SESSION_COOKIE_SECURE=True
+    )
+else:
+    app.config.update(
+        SESSION_COOKIE_SAMESITE="Lax",
+        SESSION_COOKIE_SECURE=False
+    )
+
+
+app.secret_key = os.environ.get("SECRET_KEY", "dev-secret")
+
+
+
 
 oauth = OAuth(app)
 
@@ -69,13 +87,18 @@ def register():
 
     return render_template("register.html")
 
+GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID")
+GOOGLE_CLIENT_SECRET = os.environ.get("GOOGLE_CLIENT_SECRET")
+
+
+if not GOOGLE_CLIENT_ID or not GOOGLE_CLIENT_SECRET:
+    raise RuntimeError("Google OAuth environment variables not set")
+
 google = oauth.register(
     name="google",
-    client_id="427687274087-ovm7bl9vn75tvh94v4jbec6h7d2m4n3k.apps.googleusercontent.com",
-    client_secret="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",
+    client_id=GOOGLE_CLIENT_ID,
+    client_secret=GOOGLE_CLIENT_SECRET,
     server_metadata_url="https://accounts.google.com/.well-known/openid-configuration",
-    authorize_url="https://accounts.google.com/o/oauth2/v2/auth",
-    access_token_url="https://oauth2.googleapis.com/token",
     client_kwargs={
         "scope": "openid email profile"
     }
@@ -84,22 +107,20 @@ google = oauth.register(
 
 @app.route("/login/google")
 def login_google():
-    redirect_uri = "http://localhost:5000/login/google/authorized"
+    redirect_uri = url_for("google_authorized", _external=True)
 
     return google.authorize_redirect(redirect_uri)
 
 @app.route("/login/google/authorized")
 def google_authorized():
     token = google.authorize_access_token()
-    user_info = google.token["userinfo"]
 
-    # Example data from Google
-    email = user_info.get("email")
-    name = user_info.get("name")
+    user_info = token.get("userinfo")
+    if not user_info:
+        return "Google login failed", 400
 
-    # ✅ Store login in session
-    session["user"] = email
-    session["name"] = name
+    session["user"] = user_info["email"]
+    session["name"] = user_info.get("name")
 
     return redirect(url_for("check")) 
 
@@ -248,4 +269,6 @@ def check_url_threat(url):
 
 # ---------- RUN ----------
 if __name__ == "__main__":
-    app.run(debug=True)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port, debug=True)
+

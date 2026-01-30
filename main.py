@@ -198,7 +198,7 @@ def check():
             if not url:
                 result = "❌ Please enter a URL"
             else:
-                result = check_url_threat(url)
+                result = check_url_malicious(url)
 
         
 

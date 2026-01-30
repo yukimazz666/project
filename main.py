@@ -199,7 +199,7 @@ def check():
             if not url:
                 result = "❌ Please enter a URL"
             elif not is_valid_url(url):
-                result = "❌ Invalid URL format
+                result = "❌ Invalid URL format"
             else:
                 result = check_url_malicious(url)
 

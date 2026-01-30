@@ -198,6 +198,8 @@ def check():
 
             if not url:
                 result = "❌ Please enter a URL"
+            elif not is_valid_url(url):
+                result = "❌ Invalid URL format
             else:
                 result = check_url_malicious(url)
 
@@ -232,6 +234,15 @@ def check_pdf_spam(file):
 
     except:
         return "❌ Cannot read PDF"
+
+def is_valid_url(url):
+    pattern = re.compile(
+        r'^(https?:\/\/)?'
+        r'(([A-Za-z0-9-]+\.)+[A-Za-z]{2,})'
+        r'(\/.*)?$'
+    )
+    return bool(pattern.match(url))
+
     
 SAFE_BROWSING_API_KEY = os.environ.get("SAFE_BROWSING_API_KEY")
 

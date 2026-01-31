@@ -13,12 +13,12 @@ app = Flask(__name__)
 
 if os.environ.get("RENDER"):
     app.config.update(
-        SESSION_COOKIE_SAMESITE="Lax",
+        SESSION_COOKIE_SAMESITE="None",
         SESSION_COOKIE_SECURE=True
     )
 else:
     app.config.update(
-        SESSION_COOKIE_SAMESITE="Lax",
+        SESSION_COOKIE_SAMESITE="None",
         SESSION_COOKIE_SECURE=False
     )
 
@@ -32,7 +32,7 @@ oauth = OAuth(app)
 
 # ---------- DATABASE ----------
 def get_db():
-    return sqlite3.connect("users.db")
+    return sqlite3.connect("users.db". check_same_thread=False)
 
 def create_table():
     db = get_db()
@@ -116,7 +116,8 @@ def login_google():
 def google_authorized():
     token = google.authorize_access_token()
 
-    user_info = token.get("userinfo")
+    resp = google.get("https://openidconnect.googleapis.com/v1/userinfo")
+    user_info = resp.json()
     if not user_info:
         return "Google login failed", 400
 
@@ -147,12 +148,12 @@ def login():
 
         if user and check_password_hash(user[0], password):
             session["user"] = username 
-            return redirect(url_for("check"))
+            return redirect(url_for("index"))
         else:
             flash("❌ Invalid username or password", "danger")
 
         if "user" in session:
-            return redirect(url_for("check"))
+            return redirect(url_for("index"))
 
     return render_template("login.html")
 
@@ -248,10 +249,10 @@ SAFE_BROWSING_API_KEY = os.environ.get("SAFE_BROWSING_API_KEY")
 
 # ---------- URL CHECK ----------
 def check_url_malicious(url):
-    endpoint = f"https://safebrowsing.googleapis.com/v4/threatMatches:find?key={SAFE_BROWSING_API_KEY}"
    
     if not SAFE_BROWSING_API_KEY:
         return "⚠ URL scanning not configured"
+    endpoint = f"https://safebrowsing.googleapis.com/v4/threatMatches:find?key={SAFE_BROWSING_API_KEY}"
 
     payload = {
         "client": {

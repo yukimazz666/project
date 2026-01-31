@@ -32,7 +32,7 @@ oauth = OAuth(app)
 
 # ---------- DATABASE ----------
 def get_db():
-    return sqlite3.connect("users.db". check_same_thread=False)
+    return sqlite3.connect("users.db", check_same_thread=False)
 
 def create_table():
     db = get_db()

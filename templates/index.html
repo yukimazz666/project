@@ -69,6 +69,33 @@
             width: 100%;
             font-size: 16px;
         }
+        /* Search Results */
+.results-box {
+    width: 90%;
+    max-width: 400px;
+    background: #fff;
+    border-radius: 12px;
+    margin-top: 8px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    display: none;
+    overflow: hidden;
+}
+
+.result-item {
+    padding: 12px 15px;
+    font-size: 15px;
+    cursor: pointer;
+    border-bottom: 1px solid #eee;
+}
+
+.result-item:last-child {
+    border-bottom: none;
+}
+
+.result-item:hover {
+    background: #f2f3f5;
+}
+
 
         /* Speed Dial */
         .speed-dial {
@@ -138,9 +165,64 @@
 
     <!-- Search -->
     <div class="search-box">
-        <input type="text" placeholder="Search or enter address">
+        <input type="text" placeholder="Search or enter address"  oninput="showResults()"
+        onkeydown="handleEnter(event)"
+        autocomplete="off">
     </div>
+<!-- Search Results Box -->
 
+<div id="resultsBox" class="results-box"></div>
+
+<script>
+function showResults() {
+    const input = document.getElementById("searchInput");
+    const box = document.getElementById("resultsBox");
+    const query = input.value.trim();
+
+    if (!query) {
+        box.style.display = "none";
+        return;
+    }
+
+    box.innerHTML = "";
+
+    const suggestions = [
+        query,
+        query + " meaning",
+        query + " tutorial",
+        query + " download",
+        "how to " + query
+    ];
+
+    suggestions.forEach(text => {
+        const div = document.createElement("div");
+        div.className = "result-item";
+        div.innerText = text;
+        div.onclick = () => {
+            window.location.href =
+                "https://www.google.com/search?q=" +
+                encodeURIComponent(text);
+        };
+        box.appendChild(div);
+    });
+
+    box.style.display = "block";
+}
+
+function handleEnter(event) {
+    if (event.key === "Enter") {
+        const query = event.target.value.trim();
+        if (!query) return;
+
+        window.location.href =
+            "https://www.google.com/search?q=" +
+            encodeURIComponent(query);
+    }
+}
+</script>
+
+
+    
     <!-- Speed Dial -->
     <div class="speed-dial">
         <div class="card">

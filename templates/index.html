@@ -87,6 +87,8 @@
     display: none;
     z-index: 999;
     overflow: hidden;
+    margin-top: 8px;
+
 }
 
 .result-item {
@@ -174,7 +176,7 @@
     <div class="search-wrapper">
 
     <div class="search-box">
-        <input type="text" placeholder="Search or enter address"  oninput="showResults()"
+        <input id="searchInput" type="text" placeholder="Search or enter address"  oninput="showResults()"
         onkeydown="handleEnter(event)"
         autocomplete="off">
     </div>
@@ -228,6 +230,14 @@ function handleEnter(event) {
             encodeURIComponent(query);
     }
 }
+    document.addEventListener("click", (e) => {
+    const box = document.getElementById("resultsBox");
+    const input = document.getElementById("searchInput");
+
+    if (!box.contains(e.target) && e.target !== input) {
+        box.style.display = "none";
+    }
+});
 </script>
 
 

@@ -164,6 +164,8 @@
 
 
     <!-- Search -->
+    <div class="search-wrapper">
+
     <div class="search-box">
         <input type="text" placeholder="Search or enter address"  oninput="showResults()"
         onkeydown="handleEnter(event)"
@@ -172,7 +174,7 @@
 <!-- Search Results Box -->
 
 <div id="resultsBox" class="results-box"></div>
-
+    </div>
 <script>
 function showResults() {
     const input = document.getElementById("searchInput");

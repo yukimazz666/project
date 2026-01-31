@@ -122,14 +122,13 @@
 </head>
 <body>
 
-    <!-- Logo -->
-    <div class="logo">Mini</div>
+ 
     <!-- Top Bar -->
 <div class="top-bar">
     <div class="logo">Mini</div>
 
     <!-- Check Button -->
-    <form action="/check">
+    <form action="/check" action="{{ url_for('check') }}">
         <button class="check-btn">Check</button>
     </form>
 </div>

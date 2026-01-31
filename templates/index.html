@@ -185,6 +185,26 @@
 <div id="resultsBox" class="results-box"></div>
     </div>
 <script>
+
+function isValidURL(text) {
+    return /^(https?:\/\/)?([\w-]+\.)+[\w-]{2,}(\/\S*)?$/.test(text);
+}
+
+function openQuery(text) {
+    if (isValidURL(text)) {
+        if (!text.startsWith("http")) {
+            text = "https://" + text;
+        }
+        window.location.href = text;
+    } else {
+        window.location.href =
+            "https://www.google.com/search?q=" +
+            encodeURIComponent(text);
+    }
+}
+
+
+    
 function showResults() {
     const input = document.getElementById("searchInput");
     const box = document.getElementById("resultsBox");
@@ -204,30 +224,24 @@ function showResults() {
         query + " download",
         "how to " + query
     ];
-
     suggestions.forEach(text => {
         const div = document.createElement("div");
         div.className = "result-item";
         div.innerText = text;
-        div.onclick = () => {
-            window.location.href =
-                "https://www.google.com/search?q=" +
-                encodeURIComponent(text);
-        };
+        div.onclick = () => openQuery(text);
         box.appendChild(div);
     });
+    
 
     box.style.display = "block";
 }
 
 function handleEnter(event) {
     if (event.key === "Enter") {
+        event.preventDefault();
         const query = event.target.value.trim();
         if (!query) return;
-
-        window.location.href =
-            "https://www.google.com/search?q=" +
-            encodeURIComponent(query);
+        openQuery(query);
     }
 }
     document.addEventListener("click", (e) => {

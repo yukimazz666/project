@@ -283,8 +283,6 @@ def check_pdf_spam(file):
 
         return f"{status}\nRisk Score: {risk_score}\nDetails:\n{explanation}"
 
-    except Exception as e:
-        return "❌ Cannot analyze PDF"
 
     
 SAFE_BROWSING_API_KEY = os.environ.get("SAFE_BROWSING_API_KEY")

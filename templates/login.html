@@ -104,8 +104,22 @@
 
     <form method="POST">
         <a href="{{ url_for('login_google') }}" class="google-btn">
-    Login with Google
+   <button onclick="googleLogin()" class="googlr-btn"> Login with Google</button>
 </a>
+        <script>
+function googleLogin() {
+    const width = 500;
+    const height = 600;
+    const left = (screen.width / 2) - (width / 2);
+    const top = (screen.height / 2) - (height / 2);
+
+    window.open(
+        "/login/google",
+        "GoogleLogin",
+        `width=${width},height=${height},top=${top},left=${left}`
+    );
+}
+</script>
 
         <input type="text" name="username" placeholder="Username" required>
         <input type="password" name="password" placeholder="Password" required>

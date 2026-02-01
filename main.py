@@ -19,7 +19,7 @@ if os.environ.get("RENDER"):
 else:
     app.config.update(
         SESSION_COOKIE_SAMESITE="None",
-        SESSION_COOKIE_SECURE=False
+        SESSION_COOKIE_SECURE=True
     )
 
 
@@ -114,23 +114,25 @@ def login_google():
 
 @app.route("/login/google/authorized")
 def google_authorized():
-    token = google.authorize_access_token()
-
-    resp = google.get("https://openidconnect.googleapis.com/v1/userinfo")
-    user_info = resp.json()
-    if not user_info:
-        return "Google login failed", 400
-
-    session["user"] = user_info["email"]
-    session["name"] = user_info.get("name")
-
-    return  """
-    <script>
-        window.opener.location.href = "/index";
-        window.close();
-    </script>
-    """
-
+    try:        
+        token = google.authorize_access_token()
+    
+        resp = google.get("https://openidconnect.googleapis.com/v1/userinfo")
+        user_info = resp.json()
+        if not user_info:
+            return "Google login failed", 400
+    
+        session["user"] = user_info["email"]
+        session["name"] = user_info.get("name")
+    
+        return  """
+        <script>
+            window.opener.location.href = "/index";
+            window.close();
+        </script>
+        """
+ except Exception as e:
+        return f"<h3>OAuth Error</h3><pre>{e}</pre>", 500
 
 
 
@@ -321,5 +323,5 @@ def check_url_malicious(url):
 # ---------- RUN ----------
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port, debug=True)
+    app.run(host="0.0.0.0", port=port)
 

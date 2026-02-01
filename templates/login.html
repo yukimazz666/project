@@ -103,10 +103,9 @@
     <h2>Login</h2>
 
     <form method="POST">
-        <a href="{{ url_for('login_google') }}" class="google-btn">
-   <button onclick="googleLogin()" class="googlr-btn"> Login with Google</button>
-</a>
-        <script>
+   <button type="button" onclick="googleLogin()" class="googlr-btn"> Login with Google</button>
+ 
+            <script>
 function googleLogin() {
     const width = 500;
     const height = 600;

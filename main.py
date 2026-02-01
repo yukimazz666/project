@@ -215,34 +215,69 @@ def logout():
     return redirect(url_for("login"))
 
 # ---------- PDF CHECK ----------
+
 def check_pdf_spam(file):
     spam_keywords = [
         "free money", "win prize", "click here", "urgent",
-        "limited offer", "lottery", "congratulations"
+        "limited offer", "lottery", "congratulations",
+        "verify account", "password", "bank", "payment"
     ]
+
+    suspicious_patterns = [
+        r'c[l1]ick\s*h[e3]r[e3]',     # click here variations
+        r'fr[e3]{2}\s*m[o0]n[e3]y',   # free money
+        r'pa[y]m[e3]nt\s*ur[g]?ent'
+    ]
+
+    risk_score = 0
+    found_reasons = []
 
     try:
         reader = PdfReader(file)
         text = ""
 
+        # ---------- TEXT EXTRACTION ----------
         for page in reader.pages:
             if page.extract_text():
                 text += page.extract_text().lower()
 
-        spam_count = sum(1 for word in spam_keywords if word in text)
+        # ---------- KEYWORD CHECK ----------
+        for word in spam_keywords:
+            if word in text:
+                risk_score += 1
+                found_reasons.append(f"Spam keyword detected: '{word}'")
 
-        return "❌ SPAM PDF" if spam_count >= 2 else "✅ SAFE PDF"
+        # ---------- OBFUSCATED TEXT CHECK ----------
+        for pattern in suspicious_patterns:
+            if re.search(pattern, text):
+                risk_score += 2
+                found_reasons.append("Obfuscated spam text detected")
 
-    except:
-        return "❌ Cannot read PDF"
+        # ---------- URL EXTRACTION ----------
+        urls = re.findall(r'https?://[^\s]+', text)
+        if urls:
+            risk_score += len(urls)
+            found_reasons.append(f"Contains {len(urls)} embedded link(s)")
 
-def is_valid_url(url):
-    pattern = re.compile(
-        r'^(https?:\/\/)?'
-        r'(([A-Za-z0-9-]+\.)+[A-Za-z]{2,})'
-        r'(\/.*)?$'
-    )
-    return bool(pattern.match(url))
+        # ---------- JAVASCRIPT CHECK ----------
+        if "/JavaScript" in str(reader.metadata) or "/JS" in str(reader.metadata):
+            risk_score += 5
+            found_reasons.append("Embedded JavaScript detected")
+
+        # ---------- FINAL DECISION ----------
+        if risk_score >= 6:
+            status = "❌ HIGH RISK PDF"
+        elif risk_score >= 3:
+            status = "⚠ SUSPICIOUS PDF"
+        else:
+            status = "✅ SAFE PDF"
+
+        explanation = "\n".join(found_reasons) if found_reasons else "No threats detected"
+
+        return f"{status}\nRisk Score: {risk_score}\nDetails:\n{explanation}"
+
+    except Exception as e:
+        return "❌ Cannot analyze PDF"
 
     
 SAFE_BROWSING_API_KEY = os.environ.get("SAFE_BROWSING_API_KEY")

@@ -282,7 +282,8 @@ def check_pdf_spam(file):
         explanation = "\n".join(found_reasons) if found_reasons else "No threats detected"
 
         return f"{status}\nRisk Score: {risk_score}\nDetails:\n{explanation}"
-
+    except Exception as e:
+        return f"❌ Error analyzing PDF: {str(e)}"
 
     
 SAFE_BROWSING_API_KEY = os.environ.get("SAFE_BROWSING_API_KEY")

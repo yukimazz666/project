@@ -110,25 +110,23 @@ google = oauth.register(
 def login_google():
     redirect_uri = url_for("google_authorized", _external=True)
 
-    return google.authorize_redirect(redirect_uri)
+    return google.authorize_redirect(redirect_uri("index")
 
 @app.route("/login/google/authorized")
 def google_authorized():
-    try:        
-        token = google.authorize_access_token()
+         
+    token = google.authorize_access_token()
     
-        resp = google.get("https://openidconnect.googleapis.com/v1/userinfo")
-        user_info = resp.json()
-        if not user_info:
-            return "Google login failed", 400
+    resp = google.get("https://openidconnect.googleapis.com/v1/userinfo")
+    user_info = resp.json()
+    if not user_info:
+        return "Google login failed", 400
     
-        session["user"] = user_info["email"]
-        session["name"] = user_info.get("name")
+    session["user"] = user_info["email"]
+    session["name"] = user_info.get("name")
     
-       
-    except Exception as e:
-        return f"<h3>OAuth Error</h3><pre>{e}</pre>", 500
-     return redirect(url_for("index"))
+    return redirect(url_for("index"))
+
 
 
 # ---------- LOGIN ----------

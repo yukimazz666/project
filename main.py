@@ -131,7 +131,7 @@ def google_authorized():
             window.close();
         </script>
         """
- except Exception as e:
+     except Exception as e:
         return f"<h3>OAuth Error</h3><pre>{e}</pre>", 500
 
 

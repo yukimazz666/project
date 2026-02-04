@@ -125,12 +125,7 @@ def google_authorized():
         session["user"] = user_info["email"]
         session["name"] = user_info.get("name")
     
-        return  """
-        <script>
-            window.opener.location.href = "/index";
-            window.close();
-        </script>
-        """
+        return redirect(url_for("index"))
     except Exception as e:
         return f"<h3>OAuth Error</h3><pre>{e}</pre>", 500
 

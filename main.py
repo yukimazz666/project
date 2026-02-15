@@ -103,15 +103,15 @@ google = oauth.register(
     client_kwargs={
         "scope": "openid email profile"
     }
-)
+) 
 
 
 @app.route("/login/google")
 def login_google():
     redirect_uri = url_for("google_authorized", _external=True)
 
-    return google.authorize_redirect(redirect_uri("index")
-
+    return google.authorize_redirect(redirect_uri("index"))
+                                    
 @app.route("/login/google/authorized")
 def google_authorized():
          

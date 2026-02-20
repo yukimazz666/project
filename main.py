@@ -125,7 +125,12 @@ def google_authorized():
     session["user"] = user_info["email"]
     session["name"] = user_info.get("name")
     
-    return redirect(url_for("index"))
+    return """
+        <script>
+            window.opener.location.href = "/index";
+            window.close();
+        </script>
+        """ 
 
 
 

@@ -159,9 +159,21 @@
 function handleEnter(event) {
     if (event.key === "Enter") {
         event.preventDefault();
+
         const query = event.target.value.trim();
         if (!query) return;
-        openQuery(query);
+
+        // If it's a URL → open normally
+        if (isValidURL(query)) {
+            let url = query;
+            if (!url.startsWith("http")) {
+                url = "https://" + url;
+            }
+            window.location.href = url;
+        } else {
+            // If it's search → show results (stay on page)
+            showResults();
+        }
     }
 }
     
@@ -193,15 +205,14 @@ async function showResults() {
         return;
     }
 
-    const res = await fetch(`/search?q=${encodeURIComponent(query)}`);
     let data = [];
-try {
-    const res = await fetch(`/search?q=${encodeURIComponent(query)}`);
-    data = await res.json();
-} catch (e) {
-    console.error("Search error:", e);
-    return;
-}
+    try {
+        const res = await fetch(`/search?q=${encodeURIComponent(query)}`);
+        data = await res.json();
+    } catch (e) {
+        console.error("Search error:", e);
+        return;
+    }
 
     box.innerHTML = "";
 

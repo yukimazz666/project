@@ -5,52 +5,50 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Mini Browser</title>
 <style>
-* { box-sizing: border-box; font-family: Arial, sans-serif; }
-body { margin: 0; background: #f2f3f5; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
+* { box-sizing: border-box; font-family: Arial, sans-serif; margin:0; padding:0; }
+body { margin: 0; min-height: 100vh; display: flex; flex-direction: column; align-items: center; position: relative; overflow: hidden; }
+
+canvas#bgCanvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: -1;
+}
 
 .top-bar {
-    width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 15px 20px;
+    width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; position: relative; z-index: 1;
 }
 
-.check-btn {
-    background: #ff1b2d; color: white; border: none; padding: 8px 18px; border-radius: 20px; font-size: 14px; cursor: pointer;
-}
+.check-btn { background: #ff1b2d; color: white; border: none; padding: 8px 18px; border-radius: 20px; font-size: 14px; cursor: pointer; }
 .check-btn:hover { opacity: 0.9; }
 
 .logo { margin: 30px 0 15px; font-size: 28px; font-weight: bold; color: #ff1b2d; }
 
-.search-wrapper { width: 90%; max-width: 400px; position: relative; }
+.search-wrapper { width: 90%; max-width: 400px; position: relative; z-index: 1; }
 .search-box { width: 100%; background: #fff; border-radius: 25px; padding: 10px 15px; display: flex; align-items: center; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
 .search-box input { border: none; outline: none; width: 100%; font-size: 16px; }
 
 .results-box {
     position: absolute; top: 55px; left: 0; right: 0; background: #fff; border-radius: 12px; box-shadow: 0 6px 15px rgba(0,0,0,0.2);
-    display: none; z-index: 999; overflow: hidden; margin-top: 8px;
+    display: none; z-index: 2; overflow: hidden; margin-top: 8px;
 }
 .result-item { padding: 12px 15px; font-size: 15px; cursor: pointer; border-bottom: 1px solid #eee; }
 .result-item:hover { background: #f2f3f5; }
 
-.speed-dial {
-    margin-top: 25px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; width: 90%; max-width: 420px;
-}
-.card {
-    background: #fff; border-radius: 15px; padding: 15px 5px; text-align: center; font-size: 14px; color: #333;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.08); cursor: pointer;
-}
+.speed-dial { margin-top: 25px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; width: 90%; max-width: 420px; position: relative; z-index: 1; }
+.card { background: #fff; border-radius: 15px; padding: 15px 5px; text-align: center; font-size: 14px; color: #333; box-shadow: 0 2px 5px rgba(0,0,0,0.08); cursor: pointer; }
 .card img { width: 40px; height: 40px; margin-bottom: 8px; }
 
-.bottom-nav {
-    margin-top: auto; width: 100%; background: #fff; display: flex; justify-content: space-around; padding: 12px 0;
-    box-shadow: 0 -2px 6px rgba(0,0,0,0.1);
-}
+.bottom-nav { margin-top: auto; width: 100%; background: #fff; display: flex; justify-content: space-around; padding: 12px 0; box-shadow: 0 -2px 6px rgba(0,0,0,0.1); position: relative; z-index: 1; }
 .nav-item { font-size: 14px; color: #555; }
 </style>
 </head>
 <body>
 
+<canvas id="bgCanvas"></canvas>
+
 <div class="top-bar">
     <div class="logo">Mini</div>
-    <!-- ✅ Check URL button -->
     <form action="{{ url_for('check') }}" method="POST">
         <input type="hidden" name="url" id="hiddenUrl">
         <input type="hidden" name="action" value="classify_url">
@@ -58,7 +56,6 @@ body { margin: 0; background: #f2f3f5; display: flex; flex-direction: column; al
     </form>
 </div>
 
-<!-- Search -->
 <div class="search-wrapper">
     <form id="searchForm">
         <div class="search-box">
@@ -68,7 +65,6 @@ body { margin: 0; background: #f2f3f5; display: flex; flex-direction: column; al
     <div id="resultsBox" class="results-box"></div>
 </div>
 
-<!-- Speed Dial -->
 <div class="speed-dial">
     <div class="card" data-url="https://www.google.com"><img src="https://www.google.com/favicon.ico">Google</div>
     <div class="card" data-url="https://www.youtube.com"><img src="https://www.youtube.com/favicon.ico">YouTube</div>
@@ -88,19 +84,17 @@ body { margin: 0; background: #f2f3f5; display: flex; flex-direction: column; al
 </div>
 
 <script>
+// ----------------- Search Logic -----------------
 const input = document.getElementById("searchInput");
 const form = document.getElementById("searchForm");
 const box = document.getElementById("resultsBox");
 
-// 🔍 Live search dropdown
 input.addEventListener("input", async () => {
     const query = input.value.trim();
     if (!query) { box.style.display = "none"; return; }
-
     try {
         const res = await fetch(`/search?q=${encodeURIComponent(query)}`);
         const data = await res.json();
-
         box.innerHTML = "";
         data.forEach(item => {
             const div = document.createElement("div");
@@ -109,39 +103,72 @@ input.addEventListener("input", async () => {
             div.onclick = () => { window.location.href = item.link; };
             box.appendChild(div);
         });
-
         box.style.display = data.length ? "block" : "none";
-
     } catch(e) { console.error("Search error:", e); }
 });
 
-// ⌨️ Enter key → open first result or URL
 form.addEventListener("submit", (e) => {
     e.preventDefault();
     const query = input.value.trim();
     if (!query) return;
-
     const firstResult = box.querySelector(".result-item");
-    if (firstResult) {
-        firstResult.click();
-    } else {
-        // fallback: go to URL if typed
-        let url = query.startsWith("http") ? query : `https://${query}`;
-        window.location.href = url;
-    }
+    if (firstResult) firstResult.click();
+    else window.location.href = query.startsWith("http") ? query : `https://${query}`;
 });
 
-// ❌ Click outside → close dropdown
-document.addEventListener("click", e => {
-    if (!box.contains(e.target) && e.target !== input) box.style.display = "none";
-});
-
-// ⚡ Speed dial clicks
+document.addEventListener("click", e => { if (!box.contains(e.target) && e.target !== input) box.style.display = "none"; });
 document.querySelectorAll(".speed-dial .card").forEach(card => {
-    card.addEventListener("click", () => {
-        const url = card.dataset.url;
-        window.location.href = url;
-    });
+    card.addEventListener("click", () => { window.location.href = card.dataset.url; });
+});
+
+// ----------------- 2D Particle Background -----------------
+const canvas = document.getElementById("bgCanvas");
+const ctx = canvas.getContext("2d");
+let w = canvas.width = window.innerWidth;
+let h = canvas.height = window.innerHeight;
+
+const particles = [];
+const particleCount = 80;
+
+function random(min, max) { return Math.random() * (max - min) + min; }
+
+class Particle {
+    constructor() {
+        this.x = random(0, w);
+        this.y = random(0, h);
+        this.radius = random(1, 4);
+        this.speedX = random(-0.5, 0.5);
+        this.speedY = random(-0.5, 0.5);
+    }
+    update() {
+        this.x += this.speedX;
+        this.y += this.speedY;
+        if (this.x < 0) this.x = w;
+        if (this.x > w) this.x = 0;
+        if (this.y < 0) this.y = h;
+        if (this.y > h) this.y = 0;
+    }
+    draw() {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.radius, 0, Math.PI*2);
+        ctx.fillStyle = "rgba(255, 27, 45, 0.6)";
+        ctx.fill();
+    }
+}
+
+// initialize particles
+for (let i = 0; i < particleCount; i++) particles.push(new Particle());
+
+function animate() {
+    ctx.clearRect(0, 0, w, h);
+    particles.forEach(p => { p.update(); p.draw(); });
+    requestAnimationFrame(animate);
+}
+animate();
+
+window.addEventListener("resize", () => {
+    w = canvas.width = window.innerWidth;
+    h = canvas.height = window.innerHeight;
 });
 </script>
 

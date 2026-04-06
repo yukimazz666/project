@@ -206,8 +206,16 @@ def check():
                 result = "❌ Please enter a URL"
             elif not is_valid_url(url):
                 result = "❌ Invalid URL format"
+
+            elif not domain_exists(url):
+                result = "❌ Domain does not exist"
+
+            elif not website_is_live(url):
+                result = "⚠ Domain exists but website is not reachable"
+
             else:
-                result = check_url_malicious(url)
+                safety = check_url_malicious(url)
+                result = f"🌐 Domain is valid and reachable\n{safety}"
 
         
 
@@ -324,6 +332,16 @@ def is_valid_url(url):
         r'(\/\S*)?$'  # path
     )
     return re.match(regex, url)
+    
+def website_is_live(url):
+    try:
+        if not url.startswith("http"):
+            url = "http://" + url
+            
+        response = requests.get(url, timeout=5)
+        return response.status_code < 400
+    except:
+        return False
 # ---------- RUN ----------
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))

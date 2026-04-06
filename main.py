@@ -171,7 +171,33 @@ def index():
     return render_template("index.html")
 
 
+GOOGLE_API_KEY = "AlzaSyD0c2cXo4C_17qSzwX0-yfbrUJoBu0-uts"
+SEARCH_ENGINE_ID = "d5a5367d211074616"
 
+@app.route("/search")
+def search():
+    query = request.args.get("q")
+
+    url = "https://www.googleapis.com/customsearch/v1"
+
+    params = {
+        "key": GOOGLE_API_KEY,
+        "cx": SEARCH_ENGINE_ID,
+        "q": query
+    }
+
+    response = requests.get(url, params=params)
+    data = response.json()
+
+    results = []
+
+    for item in data.get("items", []):
+        results.append({
+            "title": item["title"],
+            "link": item["link"]
+        })
+
+    return jsonify(results)
 
 
 

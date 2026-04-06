@@ -1,244 +1,149 @@
-<!DOCTYPE html><html lang="en">
+<!DOCTYPE html>
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mini Browser</title><style>
-    * {
-        box-sizing: border-box;
-        font-family: Arial, sans-serif;
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mini Browser</title>
+<style>
+* { box-sizing: border-box; font-family: Arial, sans-serif; }
+body { margin: 0; background: #f2f3f5; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
 
-    body {
-        margin: 0;
-        background: #f2f3f5;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        min-height: 100vh;
-    }
+.top-bar {
+    width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 15px 20px;
+}
 
-    .top-bar {
-        width: 100%;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 15px 20px;
-    }
+.check-btn {
+    background: #ff1b2d; color: white; border: none; padding: 8px 18px; border-radius: 20px; font-size: 14px; cursor: pointer;
+}
+.check-btn:hover { opacity: 0.9; }
 
-    .check-btn {
-        background: #ff1b2d;
-        color: white;
-        border: none;
-        padding: 8px 18px;
-        border-radius: 20px;
-        font-size: 14px;
-        cursor: pointer;
-    }
+.logo { margin: 30px 0 15px; font-size: 28px; font-weight: bold; color: #ff1b2d; }
 
-    .check-btn:hover {
-        opacity: 0.9;
-    }
+.search-wrapper { width: 90%; max-width: 400px; position: relative; }
+.search-box { width: 100%; background: #fff; border-radius: 25px; padding: 10px 15px; display: flex; align-items: center; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
+.search-box input { border: none; outline: none; width: 100%; font-size: 16px; }
 
-    .logo {
-        margin: 30px 0 15px;
-        font-size: 28px;
-        font-weight: bold;
-        color: #ff1b2d;
-    }
+.results-box {
+    position: absolute; top: 55px; left: 0; right: 0; background: #fff; border-radius: 12px; box-shadow: 0 6px 15px rgba(0,0,0,0.2);
+    display: none; z-index: 999; overflow: hidden; margin-top: 8px;
+}
+.result-item { padding: 12px 15px; font-size: 15px; cursor: pointer; border-bottom: 1px solid #eee; }
+.result-item:hover { background: #f2f3f5; }
 
-    .search-wrapper {
-        width: 90%;
-        max-width: 400px;
-        position: relative;
-    }
+.speed-dial {
+    margin-top: 25px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; width: 90%; max-width: 420px;
+}
+.card {
+    background: #fff; border-radius: 15px; padding: 15px 5px; text-align: center; font-size: 14px; color: #333;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.08); cursor: pointer;
+}
+.card img { width: 40px; height: 40px; margin-bottom: 8px; }
 
-    .search-box {
-        width: 100%;
-        background: #fff;
-        border-radius: 25px;
-        padding: 10px 15px;
-        display: flex;
-        align-items: center;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-    }
-
-    .search-box input {
-        border: none;
-        outline: none;
-        width: 100%;
-        font-size: 16px;
-    }
-
-    .results-box {
-        position: absolute;
-        top: 55px;
-        left: 0;
-        right: 0;
-        background: #fff;
-        border-radius: 12px;
-        box-shadow: 0 6px 15px rgba(0,0,0,0.2);
-        display: none;
-        z-index: 999;
-        overflow: hidden;
-        margin-top: 8px;
-    }
-
-    .result-item {
-        padding: 12px 15px;
-        font-size: 15px;
-        cursor: pointer;
-        border-bottom: 1px solid #eee;
-    }
-
-    .result-item:hover {
-        background: #f2f3f5;
-    }
-
-    .speed-dial {
-        margin-top: 25px;
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 15px;
-        width: 90%;
-        max-width: 420px;
-    }
-
-    .card {
-        background: #fff;
-        border-radius: 15px;
-        padding: 15px 5px;
-        text-align: center;
-        font-size: 14px;
-        color: #333;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.08);
-        cursor: pointer;
-    }
-
-    .card img {
-        width: 40px;
-        height: 40px;
-        margin-bottom: 8px;
-    }
-
-    .bottom-nav {
-        margin-top: auto;
-        width: 100%;
-        background: #fff;
-        display: flex;
-        justify-content: space-around;
-        padding: 12px 0;
-        box-shadow: 0 -2px 6px rgba(0,0,0,0.1);
-    }
-
-    .nav-item {
-        font-size: 14px;
-        color: #555;
-    }
+.bottom-nav {
+    margin-top: auto; width: 100%; background: #fff; display: flex; justify-content: space-around; padding: 12px 0;
+    box-shadow: 0 -2px 6px rgba(0,0,0,0.1);
+}
+.nav-item { font-size: 14px; color: #555; }
 </style>
-
 </head>
-<body><!-- Top Bar --><div class="top-bar">
-    <div class="logo">Mini</div><!-- ✅ Updated Check Form -->
-<form action="{{ url_for('check') }}" method="POST">
-    <input type="hidden" name="url" id="hiddenUrl">
-    <input type="hidden" name="action" value="classify_url">
-    <button class="check-btn" type="submit">Check</button>
-</form>
+<body>
 
+<div class="top-bar">
+    <div class="logo">Mini</div>
+    <!-- ✅ Check URL button -->
+    <form action="{{ url_for('check') }}" method="POST">
+        <input type="hidden" name="url" id="hiddenUrl">
+        <input type="hidden" name="action" value="classify_url">
+        <button class="check-btn" type="submit">Check</button>
+    </form>
 </div>
-    <!-- Search -->
+
+<!-- Search -->
+<div class="search-wrapper">
     <form id="searchForm">
-    <div class="search-box">
-        <input id="searchInput" type="text"
-               placeholder="Search or enter address"
-               autocomplete="off">
-    </div>
-</form>
+        <div class="search-box">
+            <input id="searchInput" type="text" placeholder="Search or enter address" autocomplete="off">
+        </div>
+    </form>
+    <div id="resultsBox" class="results-box"></div>
+</div>
 
-<div id="resultsBox" class="results-box"></div>
+<!-- Speed Dial -->
+<div class="speed-dial">
+    <div class="card" data-url="https://www.google.com"><img src="https://www.google.com/favicon.ico">Google</div>
+    <div class="card" data-url="https://www.youtube.com"><img src="https://www.youtube.com/favicon.ico">YouTube</div>
+    <div class="card" data-url="https://www.facebook.com"><img src="https://www.facebook.com/favicon.ico">Facebook</div>
+    <div class="card" data-url="https://www.wikipedia.org"><img src="https://www.wikipedia.org/favicon.ico">Wiki</div>
+    <div class="card" data-url="https://www.amazon.com"><img src="https://www.amazon.com/favicon.ico">Amazon</div>
+    <div class="card" data-url="https://www.instagram.com"><img src="https://www.instagram.com/favicon.ico">Instagram</div>
+    <div class="card" data-url="https://www.twitter.com"><img src="https://www.twitter.com/favicon.ico">Twitter</div>
+    <div class="card" data-url="https://www.opera.com"><img src="https://www.opera.com/favicon.ico">Opera</div>
+</div>
 
-    
+<div class="bottom-nav">
+    <div class="nav-item">Home</div>
+    <div class="nav-item">Search</div>
+    <div class="nav-item">Tabs</div>
+    <div class="nav-item">Menu</div>
+</div>
+
 <script>
 const input = document.getElementById("searchInput");
 const form = document.getElementById("searchForm");
 const box = document.getElementById("resultsBox");
 
-// 🔍 LIVE DROPDOWN
+// 🔍 Live search dropdown
 input.addEventListener("input", async () => {
     const query = input.value.trim();
-
-    if (!query) {
-        box.style.display = "none";
-        return;
-    }
+    if (!query) { box.style.display = "none"; return; }
 
     try {
         const res = await fetch(`/search?q=${encodeURIComponent(query)}`);
         const data = await res.json();
 
         box.innerHTML = "";
-
         data.forEach(item => {
             const div = document.createElement("div");
             div.className = "result-item";
-
-            div.innerHTML = `
-                <strong>${item.title}</strong><br>
-                <span style="color:green; font-size:13px;">${item.link}</span>
-            `;
-
-            div.onclick = () => {
-                window.location.href = item.link;
-            };
-
+            div.innerHTML = `<strong>${item.title}</strong><br><span style="color:green; font-size:13px;">${item.link}</span>`;
+            div.onclick = () => { window.location.href = item.link; };
             box.appendChild(div);
         });
 
-        box.style.display = "block";
+        box.style.display = data.length ? "block" : "none";
 
-    } catch (e) {
-        console.error("Search error:", e);
-    }
+    } catch(e) { console.error("Search error:", e); }
 });
 
-// ⌨️ ENTER KEY (FORM SUBMIT)
+// ⌨️ Enter key → open first result or URL
 form.addEventListener("submit", (e) => {
     e.preventDefault();
-
     const query = input.value.trim();
     if (!query) return;
 
-    if (/^(https?:\/\/)?([\w-]+\.)+[\w-]{2,}/.test(query)) {
-        let url = query.startsWith("http") ? query : "https://" + query;
-        window.location.href = url;
+    const firstResult = box.querySelector(".result-item");
+    if (firstResult) {
+        firstResult.click();
     } else {
-        // 🔥 FORCE show dropdown results
-        input.dispatchEvent(new Event("input"));
+        // fallback: go to URL if typed
+        let url = query.startsWith("http") ? query : `https://${query}`;
+        window.location.href = url;
     }
 });
 
-// ❌ CLICK OUTSIDE → CLOSE DROPDOWN
-document.addEventListener("click", (e) => {
-    if (!box.contains(e.target) && e.target !== input) {
-        box.style.display = "none";
-    }
+// ❌ Click outside → close dropdown
+document.addEventListener("click", e => {
+    if (!box.contains(e.target) && e.target !== input) box.style.display = "none";
+});
+
+// ⚡ Speed dial clicks
+document.querySelectorAll(".speed-dial .card").forEach(card => {
+    card.addEventListener("click", () => {
+        const url = card.dataset.url;
+        window.location.href = url;
+    });
 });
 </script>
 
-    
-    <!-- Speed Dial --><div class="speed-dial">
-    <div class="card"><img src="https://www.google.com/favicon.ico">Google</div>
-    <div class="card"><img src="https://www.youtube.com/favicon.ico">YouTube</div>
-    <div class="card"><img src="https://www.facebook.com/favicon.ico">Facebook</div>
-    <div class="card"><img src="https://www.wikipedia.org/favicon.ico">Wiki</div>
-    <div class="card"><img src="https://www.amazon.com/favicon.ico">Amazon</div>
-    <div class="card"><img src="https://www.instagram.com/favicon.ico">Instagram</div>
-    <div class="card"><img src="https://www.twitter.com/favicon.ico">Twitter</div>
-    <div class="card"><img src="https://www.opera.com/favicon.ico">Opera</div>
-</div><!-- Bottom Navigation --><div class="bottom-nav">
-    <div class="nav-item">Home</div>
-    <div class="nav-item">Search</div>
-    <div class="nav-item">Tabs</div>
-    <div class="nav-item">Menu</div>
-</div></body>
+</body>
 </html>

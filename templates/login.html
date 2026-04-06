@@ -1,28 +1,62 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Login</title>
+<style>
+* { box-sizing: border-box; font-family: Arial, sans-serif; margin: 0; padding: 0; }
+body { margin: 0; height: 100vh; display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative; background: #020617; }
 
-    <style>
-        * {
-            box-sizing: border-box;
-            font-family: Arial, sans-serif;
-        }
+canvas#bgCanvas { position: fixed; top: 0; left: 0; z-index: -1; }
 
-        body {
-            margin: 0;
-            height: 100vh;
-            background-image: url("{{ url_for('static', filename='bg.jpg') }}");
-            background-size: cover;
-            background-position: center;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
+.login-box {
+    width: 100%;
+    max-width: 350px;
+    background: rgba(0, 0, 0, 0.75);
+    padding: 25px;
+    border-radius: 10px;
+    color: #fff;
+    position: relative;
+    z-index: 1;
+}
 
-        .google-btn {
+.login-box h2 {
+    text-align: center;
+    margin-bottom: 20px;
+    color: #38bdf8;
+}
+
+.login-box input {
+    width: 100%;
+    padding: 12px;
+    margin: 10px 0;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    background: #020617;
+    color: white;
+}
+
+.login-box button {
+    width: 100%;
+    padding: 12px;
+    background: #22c55e;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    font-weight: bold;
+    color: #020617;
+    cursor: pointer;
+    transition: 0.2s;
+}
+.login-box button:hover { background: #16a34a; }
+
+.register-text a { color: #00bfff; }
+
+.login-box p { text-align: center; margin-top: 12px; font-size: 13px; color: #ee6617; }
+
+.google-btn {
     display: block;
     text-align: center;
     padding: 14px;
@@ -31,102 +65,89 @@
     border-radius: 8px;
     text-decoration: none;
     font-weight: bold;
+    margin-bottom: 10px;
 }
 
-
-        .login-box {
-            width: 100%;
-            max-width: 350px;
-            background: rgba(0, 0, 0, 0.75);
-            padding: 25px;
-            border-radius: 10px;
-            color: #fff;
-        }
-
-        .login-box h2 {
-            text-align: center;
-            margin-bottom: 20px;
-            color: #38bdf8;
-        }
-
-        .login-box input {
-            width: 100%;
-            padding: 12px;
-            margin: 10px 0;
-            border: none;
-            border-radius: 6px;
-            font-size: 16px;
-            background: #020617;
-            color: white;
-        }
-
-        .login-box button {
-            width: 100%;
-            padding: 12px;
-            background: #22c55e;
-            border: none;
-            border-radius: 6px;
-            font-size: 16px;
-            font-weight: bold;
-            color: #020617;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-
-        .register-text a {
-            color: #00bfff;
-}
-
-
-        .login-box button:hover {
-            background: #16a34a;
-        }
-
-        .login-box p {
-            text-align: center;
-            margin-top: 12px;
-            font-size: 13px;
-            color: #ee6617;
-        }
-
-        @media (max-width: 480px) {
-            .login-box {
-                margin: 15px;
-            }
-        }
-    </style>
+@media (max-width: 480px) { .login-box { margin: 15px; } }
+</style>
 </head>
-
 <body>
+
+<canvas id="bgCanvas"></canvas>
 
 <div class="login-box">
     <h2>Login</h2>
 
     <form method="POST">
-   <button type="button" onclick="googleLogin()" class="googlr-btn"> Login with Google</button>
- 
-            <script>
-function googleLogin() {
-    const width = 500;
-    const height = 600;
-    const left = (screen.width / 2) - (width / 2);
-    const top = (screen.height / 2) - (height / 2);
+        <button type="button" onclick="googleLogin()" class="google-btn">Login with Google</button>
 
-    window.open(
-        "/login/google",
-        "GoogleLogin",
-        `width=${width},height=${height},top=${top},left=${left}`
-    );
-}
-</script>
+        <script>
+        function googleLogin() {
+            const width = 500;
+            const height = 600;
+            const left = (screen.width / 2) - (width / 2);
+            const top = (screen.height / 2) - (height / 2);
+            window.open("/login/google", "GoogleLogin", `width=${width},height=${height},top=${top},left=${left}`);
+        }
+        </script>
 
         <input type="text" name="username" placeholder="Username" required>
         <input type="password" name="password" placeholder="Password" required>
         <button type="submit">Login</button>
     </form>
+
     <p class="register-text"><a href="{{ url_for('register')}}">Register</a></p>
     <p>© 2026 ThreatGuard</p>
 </div>
+
+<script>
+// ---------------- 2D Rising Glowing Circles ----------------
+const canvas = document.getElementById('bgCanvas');
+const ctx = canvas.getContext('2d');
+let w = canvas.width = window.innerWidth;
+let h = canvas.height = window.innerHeight;
+
+class Circle {
+    constructor() {
+        this.reset();
+    }
+    reset() {
+        this.x = Math.random() * w;
+        this.y = h + Math.random() * h;
+        this.radius = Math.random() * 4 + 2;
+        this.speedY = Math.random() * 1 + 0.5;
+        this.alpha = Math.random() * 0.5 + 0.3;
+        this.color = `rgba(56, 223, 248, ${this.alpha})`;
+    }
+    update() {
+        this.y -= this.speedY;
+        if (this.y < -this.radius) this.reset();
+    }
+    draw() {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+        ctx.fillStyle = this.color;
+        ctx.shadowColor = this.color;
+        ctx.shadowBlur = 8;
+        ctx.fill();
+    }
+}
+
+const circles = [];
+for (let i = 0; i < 80; i++) circles.push(new Circle());
+
+function animate() {
+    ctx.clearRect(0, 0, w, h);
+    circles.forEach(c => { c.update(); c.draw(); });
+    requestAnimationFrame(animate);
+}
+animate();
+
+window.addEventListener('resize', () => { 
+    w = canvas.width = window.innerWidth;
+    h = canvas.height = window.innerHeight;
+});
+</script>
 
 </body>
 </html>

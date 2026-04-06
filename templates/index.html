@@ -213,6 +213,11 @@ async function showResults() {
         console.error("Search error:", e);
         return;
     }
+    data.sort((a, b) => {
+    if (a.link.includes(query)) return -1;
+    if (b.link.includes(query)) return 1;
+    return 0;
+});
 
     box.innerHTML = "";
 
@@ -235,11 +240,7 @@ async function showResults() {
 
     box.style.display = "block";
 
-data.sort((a, b) => {
-    if (a.link.includes(query)) return -1;
-    if (b.link.includes(query)) return 1;
-    return 0;
-});
+
 }
 </script>
     

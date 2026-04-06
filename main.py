@@ -6,6 +6,7 @@ import sqlite3
 from werkzeug.security import generate_password_hash, check_password_hash
 from authlib.integrations.flask_client import OAuth
 import os
+import socket
 
 
 
@@ -226,6 +227,16 @@ def check():
 def logout():
     session.clear()
     return redirect(url_for("login"))
+
+
+
+def domain_exists(url):
+    try:
+        domain = re.sub(r'https?://', '', url).split('/')[0]
+        socket.gethostbyname(domain)
+        return True
+    except:
+        return False
 
 # ---------- PDF CHECK ----------
 

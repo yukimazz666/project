@@ -1,11 +1,4 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mini Browser</title>
-
-    <!DOCTYPE html><html lang="en">
+<!DOCTYPE html><html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -163,6 +156,15 @@
 </div>
 
 <script>
+function handleEnter(event) {
+    if (event.key === "Enter") {
+        event.preventDefault();
+        const query = event.target.value.trim();
+        if (!query) return;
+        openQuery(query);
+    }
+}
+    
 function isValidURL(text) {
     return /^(https?:\/\/)?([\w-]+\.)+[\w-]{2,}(\/\S*)?$/.test(text);
 }
@@ -192,7 +194,14 @@ async function showResults() {
     }
 
     const res = await fetch(`/search?q=${encodeURIComponent(query)}`);
-    const data = await res.json();
+    let data = [];
+try {
+    const res = await fetch(`/search?q=${encodeURIComponent(query)}`);
+    data = await res.json();
+} catch (e) {
+    console.error("Search error:", e);
+    return;
+}
 
     box.innerHTML = "";
 

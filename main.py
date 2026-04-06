@@ -194,7 +194,9 @@ def search():
     for item in data.get("items", []):
         results.append({
             "title": item["title"],
-            "link": item["link"]
+            "link": item["link"],
+            "display": item.get("displayLink"),
+            "snippet": item.get("snippet")
         })
 
     return jsonify(results)

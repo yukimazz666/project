@@ -145,15 +145,13 @@
     <button class="check-btn" type="submit">Check</button>
 </form>
 
-</div><!-- Search --><div class="search-wrapper">
-    <div class="search-box">
-        <input id="searchInput" type="text" placeholder="Search or enter address"
-               oninput="showResults()"
-               onkeydown="handleEnter(event)"
-               autocomplete="off">
-    </div><div id="resultsBox" class="results-box"></div>
-
 </div>
+    <!-- Search -->
+    <form onsubmit="handleSearch(event)">
+    <div class="search-box">
+        <input id="searchInput" type="text" placeholder="Search or enter address" autocomplete="off">
+    </div>
+</form>
 
 <script>
 function handleEnter(event) {
@@ -162,6 +160,9 @@ function handleEnter(event) {
 
         const query = event.target.value.trim();
         if (!query) return;
+        
+        console.log("ENTER PRESSED:", query); // debug
+
 
         // If it's a URL → open normally
         if (isValidURL(query)) {
@@ -174,6 +175,23 @@ function handleEnter(event) {
             // If it's search → show results (stay on page)
             showResults();
         }
+    }
+}
+
+function handleSearch(event) {
+    event.preventDefault();
+
+    const query = document.getElementById("searchInput").value.trim();
+    if (!query) return;
+
+    if (isValidURL(query)) {
+        let url = query;
+        if (!url.startsWith("http")) {
+            url = "https://" + url;
+        }
+        window.location.href = url;
+    } else {
+        showResults();
     }
 }
     

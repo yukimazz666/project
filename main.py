@@ -316,7 +316,14 @@ def check_url_malicious(url):
 
     return "❌ Malicious URL detected" if "matches" in data else "✅ URL is safe"
 
-
+def is_valid_url(url):
+    regex = re.compile(
+        r'^(https?:\/\/)?'  # http:// or https://
+        r'([\w\-]+\.)+[\w\-]+'  # domain
+        r'(\:[0-9]+)?'  # port
+        r'(\/\S*)?$'  # path
+    )
+    return re.match(regex, url)
 # ---------- RUN ----------
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))

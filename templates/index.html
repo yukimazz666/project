@@ -5,187 +5,162 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mini Browser</title>
 
-    <style>
-        * {
-            box-sizing: border-box;
-            font-family: Arial, sans-serif;
-        }
+    <!DOCTYPE html><html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mini Browser</title><style>
+    * {
+        box-sizing: border-box;
+        font-family: Arial, sans-serif;
+    }
 
-        body {
-            margin: 0;
-            background: #f2f3f5;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-height: 100vh;
-        }
-        /* Top Bar */
-.top-bar {
-    width: 100%;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 15px 20px;
-}
+    body {
+        margin: 0;
+        background: #f2f3f5;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        min-height: 100vh;
+    }
 
-.check-btn {
-    background: #ff1b2d;
-    color: white;
-    border: none;
-    padding: 8px 18px;
-    border-radius: 20px;
-    font-size: 14px;
-    cursor: pointer;
-}
+    .top-bar {
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px 20px;
+    }
 
-.check-btn:hover {
-    opacity: 0.9;
-}
+    .check-btn {
+        background: #ff1b2d;
+        color: white;
+        border: none;
+        padding: 8px 18px;
+        border-radius: 20px;
+        font-size: 14px;
+        cursor: pointer;
+    }
 
+    .check-btn:hover {
+        opacity: 0.9;
+    }
 
-        /* Top Logo */
-        .logo {
-            margin: 30px 0 15px;
-            font-size: 28px;
-            font-weight: bold;
-            color: #ff1b2d;
-        }
+    .logo {
+        margin: 30px 0 15px;
+        font-size: 28px;
+        font-weight: bold;
+        color: #ff1b2d;
+    }
 
-        /* Search Bar */
-        .search-box {
-            width: 90%;
-            max-width: 400px;
-            background: #fff;
-            border-radius: 25px;
-            padding: 10px 15px;
-            display: flex;
-            align-items: center;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-        }
+    .search-wrapper {
+        width: 90%;
+        max-width: 400px;
+        position: relative;
+    }
 
-        .search-box input {
-            border: none;
-            outline: none;
-            width: 100%;
-            font-size: 16px;
-        }
-.search-wrapper {
-    width: 90%;
-    max-width: 400px;
-    position: relative;
-}
+    .search-box {
+        width: 100%;
+        background: #fff;
+        border-radius: 25px;
+        padding: 10px 15px;
+        display: flex;
+        align-items: center;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
 
-/* Results dropdown */
-.results-box {
-    position: absolute;
-    top: 55px;
-    left: 0;
-    right: 0;
-    background: #fff;
-    border-radius: 12px;
-    box-shadow: 0 6px 15px rgba(0,0,0,0.2);
-    display: none;
-    z-index: 999;
-    overflow: hidden;
-    margin-top: 8px;
+    .search-box input {
+        border: none;
+        outline: none;
+        width: 100%;
+        font-size: 16px;
+    }
 
-}
+    .results-box {
+        position: absolute;
+        top: 55px;
+        left: 0;
+        right: 0;
+        background: #fff;
+        border-radius: 12px;
+        box-shadow: 0 6px 15px rgba(0,0,0,0.2);
+        display: none;
+        z-index: 999;
+        overflow: hidden;
+        margin-top: 8px;
+    }
 
-.result-item {
-    padding: 12px 15px;
-    font-size: 15px;
-    cursor: pointer;
-    border-bottom: 1px solid #eee;
-}
+    .result-item {
+        padding: 12px 15px;
+        font-size: 15px;
+        cursor: pointer;
+        border-bottom: 1px solid #eee;
+    }
 
-.result-item:last-child {
-    border-bottom: none;
-}
+    .result-item:hover {
+        background: #f2f3f5;
+    }
 
-.result-item:hover {
-    background: #f2f3f5;
-}
+    .speed-dial {
+        margin-top: 25px;
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 15px;
+        width: 90%;
+        max-width: 420px;
+    }
 
+    .card {
+        background: #fff;
+        border-radius: 15px;
+        padding: 15px 5px;
+        text-align: center;
+        font-size: 14px;
+        color: #333;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.08);
+        cursor: pointer;
+    }
 
-        /* Speed Dial */
-        .speed-dial {
-            margin-top: 25px;
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 15px;
-            width: 90%;
-            max-width: 420px;
-        }
+    .card img {
+        width: 40px;
+        height: 40px;
+        margin-bottom: 8px;
+    }
 
-        .card {
-            background: #fff;
-            border-radius: 15px;
-            padding: 15px 5px;
-            text-align: center;
-            font-size: 14px;
-            color: #333;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.08);
-            cursor: pointer;
-        }
+    .bottom-nav {
+        margin-top: auto;
+        width: 100%;
+        background: #fff;
+        display: flex;
+        justify-content: space-around;
+        padding: 12px 0;
+        box-shadow: 0 -2px 6px rgba(0,0,0,0.1);
+    }
 
-        .card img {
-            width: 40px;
-            height: 40px;
-            margin-bottom: 8px;
-        }
+    .nav-item {
+        font-size: 14px;
+        color: #555;
+    }
+</style>
 
-        /* Bottom Navigation */
-        .bottom-nav {
-            margin-top: auto;
-            width: 100%;
-            background: #fff;
-            display: flex;
-            justify-content: space-around;
-            padding: 12px 0;
-            box-shadow: 0 -2px 6px rgba(0,0,0,0.1);
-        }
-
-        .nav-item {
-            font-size: 14px;
-            color: #555;
-        }
-
-        @media (max-width: 480px) {
-            .speed-dial {
-                grid-template-columns: repeat(3, 1fr);
-            }
-        }
-    </style>
 </head>
-<body>
+<body><!-- Top Bar --><div class="top-bar">
+    <div class="logo">Mini</div><!-- ✅ Updated Check Form -->
+<form action="{{ url_for('check') }}" method="POST">
+    <input type="hidden" name="url" id="hiddenUrl">
+    <input type="hidden" name="action" value="classify_url">
+    <button class="check-btn" type="submit">Check</button>
+</form>
 
-
- 
-    <!-- Top Bar -->
-<div class="top-bar">
-    <div class="logo">Mini</div>
-
-    <!-- Check Button -->
-    <form action="{{ url_for('check') }}">
-        <button class="check-btn">Check</button>
-    </form>
-</div>
-
-
-    <!-- Search -->
-    <div class="search-wrapper">
-
+</div><!-- Search --><div class="search-wrapper">
     <div class="search-box">
-        <input id="searchInput" type="text" placeholder="Search or enter address"  oninput="showResults()"
-        onkeydown="handleEnter(event)"
-        autocomplete="off">
-    </div>
-<!-- Search Results Box -->
+        <input id="searchInput" type="text" placeholder="Search or enter address"
+               oninput="showResults()"
+               onkeydown="handleEnter(event)"
+               autocomplete="off">
+    </div><div id="resultsBox" class="results-box"></div>
 
-<div id="resultsBox" class="results-box"></div>
-    </div>
-<script>
-
+</div><script>
 function isValidURL(text) {
     return /^(https?:\/\/)?([\w-]+\.)+[\w-]{2,}(\/\S*)?$/.test(text);
 }
@@ -203,8 +178,12 @@ function openQuery(text) {
     }
 }
 
+// ✅ Send input to backend when clicking Check
+document.querySelector(".check-btn").addEventListener("click", function () {
+    const input = document.getElementById("searchInput").value.trim();
+    document.getElementById("hiddenUrl").value = input;
+});
 
-    
 function showResults() {
     const input = document.getElementById("searchInput");
     const box = document.getElementById("resultsBox");
@@ -224,6 +203,7 @@ function showResults() {
         query + " download",
         "how to " + query
     ];
+
     suggestions.forEach(text => {
         const div = document.createElement("div");
         div.className = "result-item";
@@ -231,7 +211,6 @@ function showResults() {
         div.onclick = () => openQuery(text);
         box.appendChild(div);
     });
-    
 
     box.style.display = "block";
 }
@@ -244,7 +223,8 @@ function handleEnter(event) {
         openQuery(query);
     }
 }
-    document.addEventListener("click", (e) => {
+
+document.addEventListener("click", (e) => {
     const box = document.getElementById("resultsBox");
     const input = document.getElementById("searchInput");
 
@@ -252,53 +232,19 @@ function handleEnter(event) {
         box.style.display = "none";
     }
 });
-</script>
-
-
-    
-    <!-- Speed Dial -->
-    <div class="speed-dial">
-        <div class="card">
-            <img src="https://www.google.com/favicon.ico">
-            Google
-        </div>
-        <div class="card">
-            <img src="https://www.youtube.com/favicon.ico">
-            YouTube
-        </div>
-        <div class="card">
-            <img src="https://www.facebook.com/favicon.ico">
-            Facebook
-        </div>
-        <div class="card">
-            <img src="https://www.wikipedia.org/favicon.ico">
-            Wiki
-        </div>
-        <div class="card">
-            <img src="https://www.amazon.com/favicon.ico">
-            Amazon
-        </div>
-        <div class="card">
-            <img src="https://www.instagram.com/favicon.ico">
-            Instagram
-        </div>
-        <div class="card">
-            <img src="https://www.twitter.com/favicon.ico">
-            Twitter
-        </div>
-        <div class="card">
-            <img src="https://www.opera.com/favicon.ico">
-            Opera
-        </div>
-    </div>
-
-    <!-- Bottom Navigation -->
-    <div class="bottom-nav">
-        <div class="nav-item">Home</div>
-        <div class="nav-item">Search</div>
-        <div class="nav-item">Tabs</div>
-        <div class="nav-item">Menu</div>
-    </div>
-
-</body>
+</script><!-- Speed Dial --><div class="speed-dial">
+    <div class="card"><img src="https://www.google.com/favicon.ico">Google</div>
+    <div class="card"><img src="https://www.youtube.com/favicon.ico">YouTube</div>
+    <div class="card"><img src="https://www.facebook.com/favicon.ico">Facebook</div>
+    <div class="card"><img src="https://www.wikipedia.org/favicon.ico">Wiki</div>
+    <div class="card"><img src="https://www.amazon.com/favicon.ico">Amazon</div>
+    <div class="card"><img src="https://www.instagram.com/favicon.ico">Instagram</div>
+    <div class="card"><img src="https://www.twitter.com/favicon.ico">Twitter</div>
+    <div class="card"><img src="https://www.opera.com/favicon.ico">Opera</div>
+</div><!-- Bottom Navigation --><div class="bottom-nav">
+    <div class="nav-item">Home</div>
+    <div class="nav-item">Search</div>
+    <div class="nav-item">Tabs</div>
+    <div class="nav-item">Menu</div>
+</div></body>
 </html>

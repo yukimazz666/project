@@ -67,4 +67,76 @@ canvas#bgCanvas { position: fixed; top: 0; left: 0; z-index: -1; }
 <canvas id="bgCanvas"></canvas>
 
 <div class="login-box">
-    <
+    <h2>Login</h2>
+
+    <form method="POST">
+        <button type="button" onclick="googleLogin()" class="google-btn">Login with Google</button>
+        <script>
+        function googleLogin() {
+            const width = 500;
+            const height = 600;
+            const left = (screen.width / 2) - (width / 2);
+            const top = (screen.height / 2) - (height / 2);
+            window.open("/login/google", "GoogleLogin", `width=${width},height=${height},top=${top},left=${left}`);
+        }
+        </script>
+
+        <input type="text" name="username" placeholder="Username" required>
+        <input type="password" name="password" placeholder="Password" required>
+        <button type="submit">Login</button>
+    </form>
+
+    <p class="register-text"><a href="{{ url_for('register')}}">Register</a></p>
+    <p>© 2026 ThreatGuard</p>
+</div>
+
+<script>
+// ---------------- 2D Wavy Pattern Animation ----------------
+const canvas = document.getElementById('bgCanvas');
+const ctx = canvas.getContext('2d');
+let w = canvas.width = window.innerWidth;
+let h = canvas.height = window.innerHeight;
+
+let lines = [];
+const lineCount = 6;
+for (let i = 0; i < lineCount; i++) {
+    lines.push({
+        yOffset: h / 2,
+        amplitude: 30 + Math.random() * 20,
+        frequency: 0.005 + Math.random() * 0.005,
+        speed: 0.002 + Math.random() * 0.002,
+        phase: Math.random() * Math.PI * 2,
+        color: `rgba(56, 223, 248, 0.5)`
+    });
+}
+
+function animate() {
+    ctx.clearRect(0, 0, w, h);
+
+    lines.forEach(line => {
+        ctx.beginPath();
+        for (let x = 0; x <= w; x += 10) {
+            const y = line.yOffset + Math.sin(x * line.frequency + line.phase) * line.amplitude;
+            if (x === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+        }
+        ctx.strokeStyle = line.color;
+        ctx.lineWidth = 2;
+        ctx.shadowBlur = 8;
+        ctx.shadowColor = line.color;
+        ctx.stroke();
+        line.phase += line.speed * Math.PI * 2;
+    });
+
+    requestAnimationFrame(animate);
+}
+animate();
+
+window.addEventListener('resize', () => { 
+    w = canvas.width = window.innerWidth;
+    h = canvas.height = window.innerHeight;
+});
+</script>
+
+</body>
+</html>

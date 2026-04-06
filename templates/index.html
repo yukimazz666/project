@@ -160,7 +160,9 @@
                autocomplete="off">
     </div><div id="resultsBox" class="results-box"></div>
 
-</div><script>
+</div>
+
+<script>
 function isValidURL(text) {
     return /^(https?:\/\/)?([\w-]+\.)+[\w-]{2,}(\/\S*)?$/.test(text);
 }
@@ -178,13 +180,8 @@ function openQuery(text) {
     }
 }
 
-// ✅ Send input to backend when clicking Check
-document.querySelector(".check-btn").addEventListener("click", function () {
-    const input = document.getElementById("searchInput").value.trim();
-    document.getElementById("hiddenUrl").value = input;
-});
-
-function showResults() {
+// ✅ REPLACE OLD showResults WITH THIS
+async function showResults() {
     const input = document.getElementById("searchInput");
     const box = document.getElementById("resultsBox");
     const query = input.value.trim();
@@ -194,45 +191,32 @@ function showResults() {
         return;
     }
 
+    const res = await fetch(`/search?q=${encodeURIComponent(query)}`);
+    const data = await res.json();
+
     box.innerHTML = "";
 
-    const suggestions = [
-        query,
-        query + " meaning",
-        query + " tutorial",
-        query + " download",
-        "how to " + query
-    ];
-
-    suggestions.forEach(text => {
+    data.forEach(item => {
         const div = document.createElement("div");
         div.className = "result-item";
-        div.innerText = text;
-        div.onclick = () => openQuery(text);
+
+        div.innerHTML = `
+            <strong>${item.title}</strong><br>
+            <small>${item.link}</small>
+        `;
+
+        div.onclick = () => {
+            window.location.href = item.link;
+        };
+
         box.appendChild(div);
     });
 
     box.style.display = "block";
 }
-
-function handleEnter(event) {
-    if (event.key === "Enter") {
-        event.preventDefault();
-        const query = event.target.value.trim();
-        if (!query) return;
-        openQuery(query);
-    }
-}
-
-document.addEventListener("click", (e) => {
-    const box = document.getElementById("resultsBox");
-    const input = document.getElementById("searchInput");
-
-    if (!box.contains(e.target) && e.target !== input) {
-        box.style.display = "none";
-    }
-});
-</script><!-- Speed Dial --><div class="speed-dial">
+</script>
+    
+    <!-- Speed Dial --><div class="speed-dial">
     <div class="card"><img src="https://www.google.com/favicon.ico">Google</div>
     <div class="card"><img src="https://www.youtube.com/favicon.ico">YouTube</div>
     <div class="card"><img src="https://www.facebook.com/favicon.ico">Facebook</div>

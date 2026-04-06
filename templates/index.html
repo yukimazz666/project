@@ -221,8 +221,9 @@ async function showResults() {
         div.className = "result-item";
 
         div.innerHTML = `
-            <strong>${item.title}</strong><br>
-            <small>${item.link}</small>
+    <strong>${item.title}</strong><br>
+    <span style="color:green; font-size:13px;">${item.link}</span><br>
+    <small style="color:#555;">${item.snippet || ""}</small>
         `;
 
         div.onclick = () => {
@@ -233,6 +234,12 @@ async function showResults() {
     });
 
     box.style.display = "block";
+
+data.sort((a, b) => {
+    if (a.link.includes(query)) return -1;
+    if (b.link.includes(query)) return 1;
+    return 0;
+});
 }
 </script>
     

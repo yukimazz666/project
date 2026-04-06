@@ -66,38 +66,51 @@
             border: 1px solid #1e293b;
         }
 
-.logout-box {
-    display: flex;
-    justify-content:right;
-    margin: 20px 0;
-}
+        .logout-box {
+            display: flex;
+            justify-content: right;
+            margin: 10px 15px;
+        }
 
-.logout-btn {
-    background-color: #2ecc71;   /* same green */
-    color: black;
-    border: none;
-    padding: 12px 40px;
-    font-size: 15px;
-    font-weight: 600;
-    border-radius: 8px;
-    cursor: pointer;
-    width: 220px;               /* 👈 CONTROL WIDTH HERE */
-    transition: all 0.3s ease;
-}
+        .logout-btn {
+            background-color: #2ecc71;
+            color: black;
+            border: none;
+            padding: 10px 25px;
+            font-size: 14px;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            width: auto;
+            margin-left: 10px;
+        }
 
-.logout-btn:hover {
-    background-color: #27ae60;
-}
-
-
+        .logout-btn:hover {
+            background-color: #27ae60;
+        }
 
         .result {
             margin-top: 20px;
             padding: 12px;
-            background: #020617;
-            border-left: 5px solid #22c55e;
             border-radius: 6px;
             font-weight: bold;
+            white-space: pre-line;
+        }
+
+        /* Dynamic colors */
+        .safe {
+            background: #022c22;
+            border-left: 5px solid #22c55e;
+        }
+
+        .danger {
+            background: #2c0202;
+            border-left: 5px solid #ef4444;
+        }
+
+        .warning {
+            background: #2c1f02;
+            border-left: 5px solid #facc15;
         }
 
         @media (max-width: 480px) {
@@ -123,27 +136,48 @@
     <hr>
 
     <!-- URL DETECTION -->
-    <form method="POST">
+    <form method="POST" onsubmit="formatURL()">
         <h3>🌐 URL Threat Detection</h3>
-        <input type="text" name="url" placeholder="https://example.com" required>
+        <input id="urlInput" type="text" name="url" placeholder="https://example.com" required>
         <button type="submit" name="action" value="classify_url">Classify URL</button>
     </form>
 
-
     {% if result %}
-    <div class="result">
+    <div class="result 
+        {% if 'HIGH RISK' in result or 'Malicious' in result %}
+            danger
+        {% elif 'SUSPICIOUS' in result or '⚠' in result %}
+            warning
+        {% else %}
+            safe
+        {% endif %}
+    ">
         {{ result }}
     </div>
     {% endif %}
 </div>
 
+<!-- Buttons -->
+<div style="display:flex; justify-content:center; gap:10px;">
+    <form action="{{ url_for('index') }}" method="GET">
+        <button class="logout-btn" type="submit">⬅ Back</button>
+    </form>
 
-    <form class="logout-box" action="{{ url_for('logout') }}" method="POST">
+    <form action="{{ url_for('logout') }}" method="POST">
         <button class="logout-btn" type="submit">Logout</button>
     </form>
-    <form class="logout-box" action="{{ url_for('index') }}" method="POST">
-        <button class="logout-btn" type="submit">Logout</button>
-    </form>
+</div>
+
+<script>
+function formatURL() {
+    let input = document.getElementById("urlInput");
+    let value = input.value.trim();
+
+    if (!value.startsWith("http")) {
+        input.value = "http://" + value;
+    }
+}
+</script>
 
 </body>
 </html>

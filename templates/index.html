@@ -147,75 +147,24 @@
 
 </div>
     <!-- Search -->
-    <form onsubmit="handleSearch(event)">
+    <form id="searchForm">
     <div class="search-box">
-        <input id="searchInput" type="text" placeholder="Search or enter address" autocomplete="off">
+        <input id="searchInput" type="text"
+               placeholder="Search or enter address"
+               autocomplete="off">
     </div>
 </form>
 
-<script>
-function handleEnter(event) {
-    if (event.key === "Enter") {
-        event.preventDefault();
+<div id="resultsBox" class="results-box"></div>
 
-        const query = event.target.value.trim();
-        if (!query) return;
-        
-        console.log("ENTER PRESSED:", query); // debug
-
-
-        // If it's a URL → open normally
-        if (isValidURL(query)) {
-            let url = query;
-            if (!url.startsWith("http")) {
-                url = "https://" + url;
-            }
-            window.location.href = url;
-        } else {
-            // If it's search → show results (stay on page)
-            showResults();
-        }
-    }
-}
-
-function handleSearch(event) {
-    event.preventDefault();
-
-    const query = document.getElementById("searchInput").value.trim();
-    if (!query) return;
-
-    if (isValidURL(query)) {
-        let url = query;
-        if (!url.startsWith("http")) {
-            url = "https://" + url;
-        }
-        window.location.href = url;
-    } else {
-        showResults();
-    }
-}
     
-function isValidURL(text) {
-    return /^(https?:\/\/)?([\w-]+\.)+[\w-]{2,}(\/\S*)?$/.test(text);
-}
+<script>
+const input = document.getElementById("searchInput");
+const form = document.getElementById("searchForm");
+const box = document.getElementById("resultsBox");
 
-function openQuery(text) {
-    if (isValidURL(text)) {
-        if (!text.startsWith("http")) {
-            text = "https://" + text;
-        }
-        window.location.href = text;
-    } else {
-        window.location.href =
-            "https://www.google.com/search?q=" +
-            encodeURIComponent(text);
-    }
-}
-
-// ✅ REPLACE OLD showResults WITH THIS
-async function showResults() {
-    const input = document.getElementById("searchInput");
-    const box = document.getElementById("resultsBox");
+// 🔍 LIVE DROPDOWN
+input.addEventListener("input", async () => {
     const query = input.value.trim();
 
     if (!query) {
@@ -223,44 +172,59 @@ async function showResults() {
         return;
     }
 
-    let data = [];
     try {
         const res = await fetch(`/search?q=${encodeURIComponent(query)}`);
-        data = await res.json();
+        const data = await res.json();
+
+        box.innerHTML = "";
+
+        data.forEach(item => {
+            const div = document.createElement("div");
+            div.className = "result-item";
+
+            div.innerHTML = `
+                <strong>${item.title}</strong><br>
+                <span style="color:green; font-size:13px;">${item.link}</span>
+            `;
+
+            div.onclick = () => {
+                window.location.href = item.link;
+            };
+
+            box.appendChild(div);
+        });
+
+        box.style.display = "block";
+
     } catch (e) {
         console.error("Search error:", e);
-        return;
     }
-    data.sort((a, b) => {
-    if (a.link.includes(query)) return -1;
-    if (b.link.includes(query)) return 1;
-    return 0;
 });
 
-    box.innerHTML = "";
+// ⌨️ ENTER KEY (FORM SUBMIT)
+form.addEventListener("submit", (e) => {
+    e.preventDefault();
 
-    data.forEach(item => {
-        const div = document.createElement("div");
-        div.className = "result-item";
+    const query = input.value.trim();
+    if (!query) return;
 
-        div.innerHTML = `
-    <strong>${item.title}</strong><br>
-    <span style="color:green; font-size:13px;">${item.link}</span><br>
-    <small style="color:#555;">${item.snippet || ""}</small>
-        `;
+    if (/^(https?:\/\/)?([\w-]+\.)+[\w-]{2,}/.test(query)) {
+        let url = query.startsWith("http") ? query : "https://" + query;
+        window.location.href = url;
+    } else {
+        // 🔥 FORCE show dropdown results
+        input.dispatchEvent(new Event("input"));
+    }
+});
 
-        div.onclick = () => {
-            window.location.href = item.link;
-        };
-
-        box.appendChild(div);
-    });
-
-    box.style.display = "block";
-
-
-}
+// ❌ CLICK OUTSIDE → CLOSE DROPDOWN
+document.addEventListener("click", (e) => {
+    if (!box.contains(e.target) && e.target !== input) {
+        box.style.display = "none";
+    }
+});
 </script>
+
     
     <!-- Speed Dial --><div class="speed-dial">
     <div class="card"><img src="https://www.google.com/favicon.ico">Google</div>

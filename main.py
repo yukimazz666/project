@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, jsonify, url_for, flash, session
+from flask import Flask, render_template, request, redirect, jsonify, url_for, flash, session, g
 from PyPDF2 import PdfReader
 import requests
 import re
@@ -9,47 +9,46 @@ import os
 import socket
 
 
-
 app = Flask(__name__)
 
-if os.environ.get("RENDER"):
-    app.config.update(
-        SESSION_COOKIE_SAMESITE="None",
-        SESSION_COOKIE_SECURE=True
-    )
-else:
-    app.config.update(
-        SESSION_COOKIE_SAMESITE="None",
-        SESSION_COOKIE_SECURE=True
-    )
-
+# ---------- CONFIG ----------
+app.config.update(
+    SESSION_COOKIE_SAMESITE="None",
+    SESSION_COOKIE_SECURE=True,
+    MAX_CONTENT_LENGTH=10 * 1024 * 1024  # FIX #9: limit uploads to 10 MB
+)
 
 app.secret_key = os.environ.get("SECRET_KEY", "dev-secret")
 
-
-
-
 oauth = OAuth(app)
+
 
 # ---------- DATABASE ----------
 def get_db():
-    return sqlite3.connect("users.db", check_same_thread=False)
+    if "db" not in g:
+        g.db = sqlite3.connect("users.db", check_same_thread=False)
+    return g.db  # FIX #4: reuse per-request connection via Flask g
+
+@app.teardown_appcontext
+def close_db(error):
+    db = g.pop("db", None)  # FIX #4: always close DB at end of request
+    if db is not None:
+        db.close()
 
 def create_table():
-    db = get_db()
-    cursor = db.cursor()
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            username TEXT UNIQUE,
-            email TEXT,
-            password TEXT
-        )
-    """)
-    db.commit()
-    db.close()
+    with sqlite3.connect("users.db") as db:
+        db.execute("""
+            CREATE TABLE IF NOT EXISTS users (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                username TEXT UNIQUE,
+                email TEXT,
+                password TEXT
+            )
+        """)
+        db.commit()
 
 create_table()
+
 
 # ---------- HOME ----------
 @app.route("/")
@@ -60,9 +59,10 @@ def home():
 @app.route("/start")
 def start():
     if "user" in session:
-        return redirect(url_for("check"))   # already logged in
+        return redirect(url_for("check"))
     else:
-        return redirect(url_for("login"))   # not logged in
+        return redirect(url_for("login"))
+
 
 # ---------- REGISTER ----------
 @app.route("/register", methods=["GET", "POST"])
@@ -74,13 +74,11 @@ def register():
 
         try:
             db = get_db()
-            cursor = db.cursor()
-            cursor.execute(
+            db.execute(
                 "INSERT INTO users (username, email, password) VALUES (?, ?, ?)",
                 (username, email, password)
             )
             db.commit()
-            db.close()
             flash("Registration successful!", "success")
             return redirect(url_for("login"))
 
@@ -89,9 +87,10 @@ def register():
 
     return render_template("register.html")
 
+
+# ---------- GOOGLE OAUTH ----------
 GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID")
 GOOGLE_CLIENT_SECRET = os.environ.get("GOOGLE_CLIENT_SECRET")
-
 
 if GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET:
     google = oauth.register(
@@ -99,15 +98,11 @@ if GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET:
         client_id=GOOGLE_CLIENT_ID,
         client_secret=GOOGLE_CLIENT_SECRET,
         server_metadata_url="https://accounts.google.com/.well-known/openid-configuration",
-        client_kwargs={
-            "scope": "openid email profile"
-        }
+        client_kwargs={"scope": "openid email profile"}
     )
 else:
     google = None
     print("⚠ Google OAuth not configured (skipping)")
-
-
 
 
 @app.route("/login/google")
@@ -115,56 +110,53 @@ def login_google():
     if not google:
         return "Google login not available", 400
     redirect_uri = url_for("google_authorized", _external=True)
-
     return google.authorize_redirect(redirect_uri)
-                                    
+
+
 @app.route("/login/google/authorized")
 def google_authorized():
-         
     token = google.authorize_access_token()
-    
     resp = google.get("https://openidconnect.googleapis.com/v1/userinfo")
     user_info = resp.json()
-    if not user_info:
-        return "Google login failed", 400
-    
-    session["user"] = user_info["email"]
-    session["name"] = user_info.get("name")
-    
+
+    # FIX #3: safely extract email, avoid KeyError on missing field
+    email = user_info.get("email")
+    if not email:
+        return "Google login failed: no email returned", 400
+
+    session["user"] = email
+    session["name"] = user_info.get("name", "")
+
     return """
         <script>
             window.opener.location.href = "/index";
             window.close();
         </script>
-        """ 
-
+    """
 
 
 # ---------- LOGIN ----------
 @app.route("/login", methods=["GET", "POST"])
 def login():
+    # FIX #2: check session at the top so it applies to GET requests too
+    if "user" in session:
+        return redirect(url_for("index"))
+
     if request.method == "POST":
         username = request.form.get("username")
         password = request.form.get("password")
 
         db = get_db()
-        cursor = db.cursor()
-
-        cursor.execute(
-            "SELECT password FROM users WHERE username = ?",
-            (username,)
+        cursor = db.execute(
+            "SELECT password FROM users WHERE username = ?", (username,)
         )
         user = cursor.fetchone()
-        db.close()
 
         if user and check_password_hash(user[0], password):
-            session["user"] = username 
+            session["user"] = username
             return redirect(url_for("index"))
         else:
             flash("❌ Invalid username or password", "danger")
-
-        if "user" in session:
-            return redirect(url_for("index"))
 
     return render_template("login.html")
 
@@ -176,15 +168,21 @@ def index():
     return render_template("index.html")
 
 
-GOOGLE_API_KEY = "AlzaSyD0c2cXo4C_17qSzwX0-yfbrUJoBu0-uts"
-SEARCH_ENGINE_ID = "d5a5367d211074616"
+# FIX #1: moved GOOGLE_API_KEY to environment variable — never hardcode API keys
+GOOGLE_API_KEY = os.environ.get("GOOGLE_API_KEY")
+SEARCH_ENGINE_ID = os.environ.get("SEARCH_ENGINE_ID", "d5a5367d211074616")
+
 
 @app.route("/search")
 def search():
     query = request.args.get("q")
+    if not query:
+        return jsonify({"error": "No query provided"}), 400
+
+    if not GOOGLE_API_KEY:
+        return jsonify({"error": "Search not configured"}), 500
 
     url = "https://www.googleapis.com/customsearch/v1"
-
     params = {
         "key": GOOGLE_API_KEY,
         "cx": SEARCH_ENGINE_ID,
@@ -194,37 +192,32 @@ def search():
     response = requests.get(url, params=params)
     data = response.json()
 
-    results = []
-
-    for item in data.get("items", []):
-        results.append({
+    results = [
+        {
             "title": item["title"],
             "link": item["link"],
             "display": item.get("displayLink"),
             "snippet": item.get("snippet")
-        })
+        }
+        for item in data.get("items", [])
+    ]
 
     return jsonify(results)
 
 
-
-
-# ---------- check ----------
+# ---------- CHECK ----------
 @app.route("/check", methods=["GET", "POST"])
 def check():
     if "user" not in session:
-            return redirect(url_for("login"))
-
+        return redirect(url_for("login"))
 
     result = ""
 
     if request.method == "POST":
         action = request.form.get("action")
 
-        # ----- PDF CHECK -----
         if action == "analyze_file":
             file = request.files.get("file")
-
             if not file or file.filename == "":
                 result = "❌ Please upload a PDF file"
             elif not file.filename.lower().endswith(".pdf"):
@@ -232,29 +225,22 @@ def check():
             else:
                 result = check_pdf_spam(file)
 
-        # ----- URL CHECK -----
         elif action == "classify_url":
             url = request.form.get("url")
-
             if not url:
                 result = "❌ Please enter a URL"
             elif not is_valid_url(url):
                 result = "❌ Invalid URL format"
-
             elif not domain_exists(url):
                 result = "❌ Domain does not exist"
-
             elif not website_is_live(url):
                 result = "⚠ Domain exists but website is not reachable"
-
             else:
                 safety = check_url_malicious(url)
                 result = f"🌐 Domain is valid and reachable\n{safety}"
 
-        
-
-
     return render_template("check.html", result=result)
+
 
 @app.route("/logout", methods=["POST"])
 def logout():
@@ -262,17 +248,37 @@ def logout():
     return redirect(url_for("login"))
 
 
-
+# ---------- HELPERS ----------
 def domain_exists(url):
     try:
         domain = re.sub(r'https?://', '', url).split('/')[0]
         socket.gethostbyname(domain)
         return True
-    except:
+    except Exception:
         return False
 
-# ---------- PDF CHECK ----------
 
+def is_valid_url(url):
+    regex = re.compile(
+        r'^(https?:\/\/)?'
+        r'([\w\-]+\.)+[\w\-]+'
+        r'(\:[0-9]+)?'
+        r'(\/\S*)?$'
+    )
+    return re.match(regex, url)
+
+
+def website_is_live(url):
+    try:
+        if not url.startswith("http"):
+            url = "http://" + url
+        response = requests.get(url, timeout=5)
+        return response.status_code < 400
+    except Exception:
+        return False
+
+
+# ---------- PDF CHECK ----------
 def check_pdf_spam(file):
     spam_keywords = [
         "free money", "win prize", "click here", "urgent",
@@ -281,47 +287,53 @@ def check_pdf_spam(file):
     ]
 
     suspicious_patterns = [
-        r'c[l1]ick\s*h[e3]r[e3]',     # click here variations
-        r'fr[e3]{2}\s*m[o0]n[e3]y',   # free money
+        r'c[l1]ick\s*h[e3]r[e3]',
+        r'fr[e3]{2}\s*m[o0]n[e3]y',
         r'pa[y]m[e3]nt\s*ur[g]?ent'
     ]
 
     risk_score = 0
-    found_reasons = []
+    found_reasons = set()  # FIX #8: use set to avoid duplicate reasons
 
     try:
         reader = PdfReader(file)
         text = ""
 
-        # ---------- TEXT EXTRACTION ----------
         for page in reader.pages:
-            if page.extract_text():
-                text += page.extract_text().lower()
+            extracted = page.extract_text()
+            if extracted:
+                text += extracted.lower()
 
-        # ---------- KEYWORD CHECK ----------
         for word in spam_keywords:
             if word in text:
                 risk_score += 1
-                found_reasons.append(f"Spam keyword detected: '{word}'")
+                found_reasons.add(f"Spam keyword detected: '{word}'")
 
-        # ---------- OBFUSCATED TEXT CHECK ----------
         for pattern in suspicious_patterns:
             if re.search(pattern, text):
                 risk_score += 2
-                found_reasons.append("Obfuscated spam text detected")
+                found_reasons.add("Obfuscated spam text detected")
 
-        # ---------- URL EXTRACTION ----------
         urls = re.findall(r'https?://[^\s]+', text)
         if urls:
             risk_score += len(urls)
-            found_reasons.append(f"Contains {len(urls)} embedded link(s)")
+            found_reasons.add(f"Contains {len(urls)} embedded link(s)")
 
-        # ---------- JAVASCRIPT CHECK ----------
-        if "/JavaScript" in str(reader.metadata) or "/JS" in str(reader.metadata):
+        # FIX #5: improved JS detection — check page annotations and full trailer
+        trailer_str = str(reader.trailer)
+        js_in_trailer = "/JavaScript" in trailer_str or "/JS" in trailer_str
+
+        js_in_pages = False
+        for page in reader.pages:
+            page_str = str(page)
+            if "/JavaScript" in page_str or "/JS" in page_str or "/AA" in page_str:
+                js_in_pages = True
+                break
+
+        if js_in_trailer or js_in_pages:
             risk_score += 5
-            found_reasons.append("Embedded JavaScript detected")
+            found_reasons.add("Embedded JavaScript detected")
 
-        # ---------- FINAL DECISION ----------
         if risk_score >= 6:
             status = "❌ HIGH RISK PDF"
         elif risk_score >= 3:
@@ -330,19 +342,24 @@ def check_pdf_spam(file):
             status = "✅ SAFE PDF"
 
         explanation = "\n".join(found_reasons) if found_reasons else "No threats detected"
-
         return f"{status}\nRisk Score: {risk_score}\nDetails:\n{explanation}"
+
     except Exception as e:
         return f"❌ Error analyzing PDF: {str(e)}"
 
-    
-SAFE_BROWSING_API_KEY = os.environ.get("SAFE_BROWSING_API_KEY")
 
 # ---------- URL CHECK ----------
+SAFE_BROWSING_API_KEY = os.environ.get("SAFE_BROWSING_API_KEY")
+
+
 def check_url_malicious(url):
-   
     if not SAFE_BROWSING_API_KEY:
         return "⚠ URL scanning not configured"
+
+    # FIX #6: ensure URL has scheme before sending to Safe Browsing API
+    if not url.startswith("http"):
+        url = "http://" + url
+
     endpoint = f"https://safebrowsing.googleapis.com/v4/threatMatches:find?key={SAFE_BROWSING_API_KEY}"
 
     payload = {
@@ -368,26 +385,8 @@ def check_url_malicious(url):
 
     return "❌ Malicious URL detected" if "matches" in data else "✅ URL is safe"
 
-def is_valid_url(url):
-    regex = re.compile(
-        r'^(https?:\/\/)?'  # http:// or https://
-        r'([\w\-]+\.)+[\w\-]+'  # domain
-        r'(\:[0-9]+)?'  # port
-        r'(\/\S*)?$'  # path
-    )
-    return re.match(regex, url)
-    
-def website_is_live(url):
-    try:
-        if not url.startswith("http"):
-            url = "http://" + url
-            
-        response = requests.get(url, timeout=5)
-        return response.status_code < 400
-    except:
-        return False
+
 # ---------- RUN ----------
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
-
